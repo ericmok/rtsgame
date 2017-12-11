@@ -4,8 +4,8 @@ import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.QueryCallback;
 import com.badlogic.gdx.physics.box2d.World;
@@ -25,86 +25,111 @@ import nyc.mok.game.components.SpawnLifecycleComponent;
  */
 
 public class BattleUnitSystem extends EntityProcessingSystem {
-    private World box2dWorld;
+	private World box2dWorld;
 
-    public BattleUnitSystem(World box2dWorld) {
-        super(Aspect.all(PositionComponent.class, SpawnLifecycleComponent.class, BattleUnitComponent.class, PhysicsBody.class));
-        this.box2dWorld = box2dWorld;
-    }
+	public BattleUnitSystem(World box2dWorld) {
+		super(Aspect.all(PositionComponent.class, SpawnLifecycleComponent.class, BattleUnitComponent.class, PhysicsBody.class));
+		this.box2dWorld = box2dWorld;
+	}
 
-    @Override
-    public void removed(Entity e) {
-        PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
-        box2dWorld.destroyBody(physicsBody.body);
-    }
+	@Override
+	public void removed(Entity e) {
+		PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
+		box2dWorld.destroyBody(physicsBody.body);
+	}
 
-    class TargetAcquisitionCallback implements QueryCallback {
-        public Entity e;
-        public PhysicsBody physicsBody;
+	class Box2dQueryCallbackSortedByClosest implements QueryCallback {
+		private boolean bodyQuery = true;
 
-        public ArrayList<Fixture> fixtures = new ArrayList<Fixture>(32);
+		public Body body;
+		private Vector2 pos = new Vector2();
 
-        public TargetAcquisitionCallback init(Entity e) {
-            this.e = e;
-            this.physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
+		private ArrayList<Fixture> fixtures = new ArrayList<Fixture>(32);
+
+		public Box2dQueryCallbackSortedByClosest queryRangeForBody(Body body, float range) {
+			bodyQuery = true;
+			this.body = body;
+
+			fixtures.clear();
+
+            pos.set(body.getPosition());
+
+			box2dWorld.QueryAABB(this,
+					pos.x - range,
+					pos.y - range,
+					pos.x + range,
+					pos.y + range);
+
+			return this;
+		}
+
+		public Box2dQueryCallbackSortedByClosest queryAABB(float x, float y, float range) {
+			bodyQuery = false;
             fixtures.clear();
-            return this;
-        }
 
-        @Override
-        public boolean reportFixture(Fixture fixture) {
-            if (physicsBody.body.getFixtureList().get(0) != fixture) {
-                fixtures.add(fixture);
-                Gdx.app.log("PHYS:", fixture.toString());
-            }
-            return true;
-        }
+            pos.set(x, y);
+			box2dWorld.QueryAABB(this,
+					x - range,
+					y - range,
+					x + range,
+					y + range);
 
-        public ArrayList<Fixture> finishReport() {
-            // PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
-            final Vector2 pos = physicsBody.body.getPosition();
+			return this;
+		}
 
-            Collections.sort(fixtures, new Comparator<Fixture>() {
-                @Override
-                public int compare(Fixture fixture, Fixture t1) {
-                    float res1 = fixture.getBody().getPosition().dst(pos);
-                    float res2 = t1.getBody().getPosition().dst(pos);
+		@Override
+		public boolean reportFixture(Fixture fixture) {
+			if (bodyQuery) {
+				// TODO: Go through fixture list
+				if (body.getFixtureList().get(0) != fixture) {
+					fixtures.add(fixture);
+				}
+			}
+			else {
+				fixtures.add(fixture);
+			}
+			return true;
+		}
 
-                    if (res1 > res2) return 1;
-                    if (res1 == res2) return 0;
-                    return -1;
-                }
-            });
-            return fixtures;
-        }
-    }
+		public ArrayList<Fixture> finishReport() {
+			Collections.sort(fixtures, new Comparator<Fixture>() {
+				@Override
+				public int compare(Fixture fixture, Fixture t1) {
+					float res1 = fixture.getBody().getPosition().dst(pos);
+					float res2 = t1.getBody().getPosition().dst(pos);
 
-    TargetAcquisitionCallback targetAcquisitionCallback = new TargetAcquisitionCallback();
+					if (res1 > res2) return 1;
+					if (res1 == res2) return 0;
+					return -1;
+				}
+			});
+			return fixtures;
+		}
 
-    @Override
-    protected void process(Entity e) {
-        ComponentMapper<BattleUnitComponent> battleUnitComponentComponentMapper = world.getMapper(BattleUnitComponent.class);
-        BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
 
-        ComponentMapper<PhysicsBody> physicsBodyComponentMapper = world.getMapper(PhysicsBody.class);
-        PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+	}
 
-        box2dWorld.QueryAABB(targetAcquisitionCallback.init(e),
-                physicsBody.body.getPosition().x - battleUnitComponent.targetAcquisitionRange,
-                physicsBody.body.getPosition().y - battleUnitComponent.targetAcquisitionRange,
-                physicsBody.body.getPosition().x + battleUnitComponent.targetAcquisitionRange,
-                physicsBody.body.getPosition().y + battleUnitComponent.targetAcquisitionRange);
+	Box2dQueryCallbackSortedByClosest box2DQueryCallbackSortedByClosest = new Box2dQueryCallbackSortedByClosest();
 
-        ArrayList<Fixture> fixtures = targetAcquisitionCallback.finishReport();
-        if (fixtures.size() > 0) {
-            for (int i = 0; i < fixtures.size(); i++) {
-                if (fixtures.get(i) != physicsBody.body.getFixtureList().get(0)) {
-                    Entity entity = (Entity) fixtures.get(i).getBody().getUserData();
-                    Vector2 vector2 = fixtures.get(i).getBody().getPosition();
-                    physicsBody.body.setLinearVelocity(vector2.x - physicsBody.body.getPosition().x, vector2.y - physicsBody.body.getPosition().y);
-                }
-            }
-        }
-    }
+	@Override
+	protected void process(Entity e) {
+		ComponentMapper<BattleUnitComponent> battleUnitComponentComponentMapper = world.getMapper(BattleUnitComponent.class);
+		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
+
+		ComponentMapper<PhysicsBody> physicsBodyComponentMapper = world.getMapper(PhysicsBody.class);
+		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+
+		ArrayList<Fixture> fixtures = box2DQueryCallbackSortedByClosest.queryRangeForBody(physicsBody.body, battleUnitComponent.targetAcquisitionRange).finishReport();
+
+		if (fixtures.size() > 0) {
+			for (int i = 0; i < fixtures.size(); i++) {
+				if (fixtures.get(i) != physicsBody.body.getFixtureList().get(0)) {
+					Entity entity = (Entity) fixtures.get(i).getBody().getUserData();
+					Vector2 vector2 = fixtures.get(i).getBody().getPosition();
+					physicsBody.body.setLinearVelocity(vector2.x - physicsBody.body.getPosition().x, vector2.y - physicsBody.body.getPosition().y);
+				}
+			}
+		}
+	}
 
 }
