@@ -17,6 +17,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 
 import nyc.mok.game.systems.BattleUnitSystem;
 import nyc.mok.game.systems.PositionFromPhysicsSystem;
+import nyc.mok.game.systems.RenderBattleUnitSystem;
 import nyc.mok.game.units.Marine;
 
 
@@ -24,13 +25,12 @@ public class MyGame implements Screen, InputProcessor {
     public World ecs;
     com.badlogic.gdx.physics.box2d.World box2dWorld;
 
-    public static float PIXEL_TO_METERS = 256f;
-
     private float accumulator = 0;
     SpriteBatch batch;
     Texture img;
 
     OrthographicCamera orthographicCamera;
+
     float elapsedTime = 0;
 
     Box2DDebugRenderer debugRenderer;
@@ -44,9 +44,14 @@ public class MyGame implements Screen, InputProcessor {
     }
 
     public void create() {
-        orthographicCamera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        // This camera will get resized more appropriately later
+        orthographicCamera = new OrthographicCamera(800, 600);
+
         batch = new SpriteBatch();
         img = new Texture(Gdx.files.internal("marine.png"));
+
+        SpriteBatch ecsBatch = new SpriteBatch();
+        ecsBatch.setProjectionMatrix(orthographicCamera.combined);
 
         box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, 0f), true);
 
@@ -54,6 +59,7 @@ public class MyGame implements Screen, InputProcessor {
 //                .dependsOn()
                 .with(new PositionFromPhysicsSystem())
                 .with(new BattleUnitSystem(box2dWorld))
+                .with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))
                 .build();
 
         ecs = new World(config);
@@ -64,22 +70,21 @@ public class MyGame implements Screen, InputProcessor {
     }
 
     public void step(float delta) {
-        ecs.setDelta(delta);
-        ecs.process();
-
-        doPhysicsStep(delta);
-
-        orthographicCamera.update();
-
-        orthographicCamera.unproject(touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0));
-
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        orthographicCamera.update();
+        orthographicCamera.unproject(touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0));
+
+        ecs.setDelta(delta);
+        ecs.process();
+        doPhysicsStep(delta);
 
         batch.setProjectionMatrix(orthographicCamera.combined);
-        batch.begin();
-        batch.draw(img, touchPos.x - img.getWidth() / 2, touchPos.y - img.getHeight() / 2);
-        batch.end();
+
+//        batch.begin();
+//
+//        batch.draw(img, touchPos.x - img.getWidth() / 2, touchPos.y - img.getHeight() / 2);
+//        batch.end();
 
         debugRenderer.render(box2dWorld, orthographicCamera.combined);
     }
@@ -117,7 +122,10 @@ public class MyGame implements Screen, InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-        orthographicCamera.setToOrtho(false, width * 4, height * 4);
+        float aspectRatio = (float)width / height;
+        float scaleHeightInPixelsToMeters = 84f;
+
+        orthographicCamera.setToOrtho(false, scaleHeightInPixelsToMeters * aspectRatio, scaleHeightInPixelsToMeters);
     }
 
     @Override
@@ -153,6 +161,8 @@ public class MyGame implements Screen, InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
+
+        // TODO: Test concurrency with ecs in game loop
         Marine.create(ecs, touchPos.x, touchPos.y);
 
         return false;

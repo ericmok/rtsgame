@@ -100,15 +100,15 @@ public class BattleUnitSystem extends EntityProcessingSystem {
                     break;
             }
 
-            physicsBody.body.setLinearVelocity(10, 10);
+            physicsBody.body.setLinearVelocity(0, 0);
             spawnLifecycleComponent.lifeCycle = SpawnLifecycleComponent.LifeCycle.ALIVE;
         }
 
         box2dWorld.QueryAABB(targetAcquisitionCallback.init(e),
-                physicsBody.body.getPosition().x - 128f * 4,
-                physicsBody.body.getPosition().y - 128f * 4,
-                physicsBody.body.getPosition().x + 128f * 4,
-                physicsBody.body.getPosition().y + 128f * 4);
+                physicsBody.body.getPosition().x - battleUnitComponent.targetAcquisitionRange,
+                physicsBody.body.getPosition().y - battleUnitComponent.targetAcquisitionRange,
+                physicsBody.body.getPosition().x + battleUnitComponent.targetAcquisitionRange,
+                physicsBody.body.getPosition().y + battleUnitComponent.targetAcquisitionRange);
 
         ArrayList<Fixture> fixtures = targetAcquisitionCallback.finishReport();
         if (fixtures.size() > 0) {

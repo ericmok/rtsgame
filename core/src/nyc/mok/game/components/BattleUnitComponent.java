@@ -1,8 +1,6 @@
 package nyc.mok.game.components;
 
 import com.artemis.Component;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 
 
 public class BattleUnitComponent extends Component {
@@ -14,9 +12,6 @@ public class BattleUnitComponent extends Component {
 
     public Type typeToSpawn = Type.MARINE;
 
-    public BodyDef targetAcquisitionDef = new BodyDef();
-    public Body targetAcquisition;
-
-    public BodyDef attackRangeDef = new BodyDef();
-    public Body attackRange;
+    public float targetAcquisitionRange = 20;
+    public float attackRange = 4;
 }

@@ -74,7 +74,12 @@ public class RTSGame extends com.badlogic.gdx.Game implements InputProcessor {
 	@Override
 	public void resize(int width, int height) {
 		super.resize(width, height);
-		orthographicCamera.setToOrtho(false, width * 4, height * 4 );
+
+		float aspectRatio = width / height;
+		float scaleHeightInPixelsToMeters = height / PIXEL_TO_METERS;
+
+		// Used to be 4 * width and 4 * height
+		orthographicCamera.setToOrtho(false, aspectRatio * scaleHeightInPixelsToMeters, scaleHeightInPixelsToMeters );
 	}
 
 	@Override

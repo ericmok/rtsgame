@@ -14,6 +14,8 @@ import nyc.mok.game.components.SpawnLifecycleComponent;
 
 public class Marine {
 
+    public static final float RADIUS_METERS = 1;
+
     /**
      * Creates a marine.
      *
@@ -48,7 +50,7 @@ public class Marine {
         physicsBody.bodyDef.position.set(physicsBody.initialX, physicsBody.initialY);
 
         CircleShape circle = new CircleShape();
-        circle.setRadius(128f);
+        circle.setRadius(RADIUS_METERS);
 
         physicsBody.body = box2dWorld.createBody(physicsBody.bodyDef);
 
