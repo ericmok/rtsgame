@@ -71,7 +71,8 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
 
         scaledSprite.setTexture(simple_attack);
 
-        if (battleBehaviorComponent.target != -1) {
+        // Not sure if we need to check target again, swinging necessarily implies target...
+        if (battleBehaviorComponent.target != -1 && battleBehaviorComponent.battleState == BattleBehaviorComponent.BattleState.SWINGING) {
             PhysicsBody targetPhysicsBody = getWorld().getMapper(PhysicsBody.class).get(battleBehaviorComponent.target);
 
             accOne.set(
@@ -91,7 +92,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
             );
 
             scaledSprite.scaledDraw(spriteBatch,
-                    accOne.x, accOne.y,
+                    accOne.x, accOne.y, 0.5f, 0.5f,
                     direction.angle() - 90);
         }
     }

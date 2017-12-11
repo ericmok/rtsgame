@@ -230,17 +230,62 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
 		battleBehaviorComponent.battleProgress = 0;
 
-		return BattleBehaviorComponent.BattleState.CASTING;
+		if (battleBehaviorComponent.target != BattleBehaviorComponent.NO_ENTITY) {
+			BattleBehaviorComponent targetBattleBehavior = battleBehaviorComponentMapper.get(battleBehaviorComponent.target);
+			BattleAttackableComponent targetBattleAttackable = battleAttackableComponentComponentMapper.get(battleBehaviorComponent.target);
+
+			boolean hasDied = BattleUnitSystem.inflictDamage(battleBehaviorComponent, targetBattleAttackable);
+
+			if (hasDied) {
+				getWorld().delete(battleBehaviorComponent.target);
+				battleBehaviorComponent.target = -1; // Should be managed, but doing it anyway to be explicit
+			}
+		} else {
+			// If it never casted... why wait for cooldown?
+			return BattleBehaviorComponent.BattleState.HAS_NO_TARGET;
+		}
+
+		battleBehaviorComponent.battleProgress = 0;
+		return BattleBehaviorComponent.BattleState.WAITING_FOR_COOLDOWN;
+	}
+
+	public BattleBehaviorComponent.BattleState doWaitingForCooldown(Entity e) {
+		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
+
+		battleBehaviorComponent.battleProgress += Gdx.graphics.getDeltaTime();
+
+		if (battleBehaviorComponent.battleProgress >= battleBehaviorComponent.cooldownTime) {
+			battleBehaviorComponent.battleProgress = 0;
+			return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+		}
+
+		return BattleBehaviorComponent.BattleState.WAITING_FOR_COOLDOWN;
+	}
+
+	/**
+	 * @param battleBehaviorComponent The attacker
+	 * @param battleAttackableComponent The one receiving the damage
+	 * @return Returns true if the attackable component has died
+	 */
+	public static final boolean inflictDamage(BattleBehaviorComponent battleBehaviorComponent, BattleAttackableComponent battleAttackableComponent) {
+
+		// TODO: Apply RCS sytsem here
+		battleAttackableComponent.hp -= battleBehaviorComponent.attackDamage;
+		return battleAttackableComponent.hp <= 0;
 	}
 
 	@Override
 	protected void process(Entity e) {
 		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
 
+		// Should Test if target valid, otherwise always has no target...unless during cooldown...
+		// The target might die during casting or cooldown
 		// Test HP <= 0 and remove with every hp mutation
 
 		// Only in any state, field forces can interrupt movement?
 		// or... add a new battle state "DirectedBattleMovement"
+
+		// TODO: have transition function helpers to deal with changing battle progress
 
 		switch (battleBehaviorComponent.battleState) {
 			case HAS_NO_TARGET:
@@ -254,6 +299,9 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 				break;
 			case CASTING:
 				battleBehaviorComponent.battleState = doCasting(e);
+				break;
+			case WAITING_FOR_COOLDOWN:
+				battleBehaviorComponent.battleState = doWaitingForCooldown(e);
 				break;
 		}
 

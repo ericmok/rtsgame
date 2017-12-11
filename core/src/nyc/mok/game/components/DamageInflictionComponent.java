@@ -1,7 +1,7 @@
 package nyc.mok.game.components;
 
 import com.artemis.Component;
-import com.artemis.Entity;
+import com.artemis.annotations.EntityId;
 import com.artemis.annotations.PooledWeaver;
 
 /**
@@ -13,5 +13,5 @@ public class DamageInflictionComponent extends Component {
 	public BattleBehaviorComponent.AttackType attackType = BattleBehaviorComponent.AttackType.ROCK;
 	public float damage = 1;
 
-	public Entity target;
+	@EntityId public int target = -1;
 }
