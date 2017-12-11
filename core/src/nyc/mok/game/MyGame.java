@@ -123,9 +123,9 @@ public class MyGame implements Screen, InputProcessor {
     @Override
     public void resize(int width, int height) {
         float aspectRatio = (float)width / height;
-        float scaleHeightInPixelsToMeters = 84f;
+        float scaledHeightInMeters = Constants.VIEWPORT_MIN_METERS;
 
-        orthographicCamera.setToOrtho(false, scaleHeightInPixelsToMeters * aspectRatio, scaleHeightInPixelsToMeters);
+        orthographicCamera.setToOrtho(false, scaledHeightInMeters * aspectRatio, scaledHeightInMeters);
     }
 
     @Override
