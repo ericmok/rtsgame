@@ -21,7 +21,7 @@ public class MovementSystem extends EntityProcessingSystem {
 	private ComponentMapper<MoveTargetsComponent> moveTargetsMapper;
 
 	Vector2 acc = new Vector2();
-	Vector2 acc2 = new Vector2();
+	Vector2 accTwo = new Vector2();
 
 	public MovementSystem() {
 		super(Aspect.all(PhysicsBody.class, BattleBehaviorComponent.class, MoveTargetsComponent.class));
@@ -45,23 +45,42 @@ public class MovementSystem extends EntityProcessingSystem {
 			acc.set(targetPhysicsBody.body.getPosition().x - physicsBody.body.getPosition().x,
 					targetPhysicsBody.body.getPosition().y - physicsBody.body.getPosition().y);
 
+			accTwo.set(acc);
+
 			float maxSpeed = moveTargetsMapper.get(e).maxSpeed;
-
-			acc.nor().scl(maxSpeed / 4);
-
-			physicsBody.body.applyLinearImpulse(acc.x, acc.y,
-					physicsBody.body.getPosition().x,
-					physicsBody.body.getPosition().y, true);
-
-			physicsBody.body.getLinearVelocity().clamp(0, maxSpeed);
-
-
-//			float desiredAngularVelocity = angleDiff * 1;
 //
-//			physicsBody.body.setAngularDamping(0.5f);
-//			physicsBody.body.applyAngularImpulse(angleDiff , true);
+//			acc.nor().scl(maxSpeed / 4);
+//
+//			physicsBody.body.applyLinearImpulse(acc.x, acc.y,
+//					physicsBody.body.getPosition().x,
+//					physicsBody.body.getPosition().y, true);
+
+			// Arrival distance clamping: red3d.com/cwr/papers/1999/gdc99steer.pdf
+			float dst = targetPhysicsBody.body.getPosition().dst(physicsBody.body.getPosition());
+//			float ramp = maxSpeed * (dst / battleBehavior.rangeToBeginAttacking);
+//			float clampedSpeed = Math.min(maxSpeed, ramp);
+
+			//accTwo.clamp(0, maxSpeed);
+
+			if (dst > battleBehavior.rangeToBeginAttacking && dst < battleBehavior.maxAttackRange) {
+				float clampedSpeed = maxSpeed * ((dst - battleBehavior.rangeToBeginAttacking) / (battleBehavior.maxAttackRange - battleBehavior.rangeToBeginAttacking));
+				//accTwo.nor().scl(clampedSpeed);
+				accTwo.nor().scl(clampedSpeed);
+				physicsBody.body.setLinearVelocity(accTwo);
+			}
+			else if (dst < battleBehavior.rangeToBeginAttacking) {
+				physicsBody.body.setLinearVelocity(0, 0);
+			} else {
+				//physicsBody.body.applyLinearImpulse(accTwo.nor().scl(maxSpeed), physicsBody.body.getWorldCenter(), true);
+				physicsBody.body.setLinearVelocity(accTwo.nor().scl(maxSpeed));
+
+//				accTwo.nor().scl(moveTargets.maxAccel);
+//				physicsBody.body.applyForceToCenter(accTwo.x, accTwo.y, true);
+//				physicsBody.body.getLinearVelocity().clamp(0, maxSpeed);
+			}
 		}
 
+		// This branch makes sense if engaging a target could mean not moving towards it
 		if (battleBehavior.target != -1) {
 			PhysicsBody targetPhysicsBody = physicsBodyMapper.get(battleBehavior.target);
 

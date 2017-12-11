@@ -41,7 +41,6 @@ public class Marine {
         battleAttackableComponent.hp = 10;
 
         MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
-        moveTargetsComponent.maxSpeed = 0.5f;
 
         ecs.getMapper(BattleBehaviorComponent.class).create(e);
     }

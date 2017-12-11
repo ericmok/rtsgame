@@ -24,9 +24,9 @@ public class BattleBehaviorComponent extends Component {
 
 	/// The fudge factor for node to walk within attack range to deal with
 	/// various race conditions (attack swing time, round-off error)
-	public float rangeToBeginAttacking = 3;
+	public float rangeToBeginAttacking = 5;
 
-	public float maxAttackRange = 4;
+	public float maxAttackRange = 7;
 
 	public enum WeaponType {
 		SIMPLE,

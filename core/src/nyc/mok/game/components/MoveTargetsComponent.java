@@ -6,7 +6,8 @@ import com.artemis.annotations.PooledWeaver;
 
 @PooledWeaver
 public class MoveTargetsComponent extends Component{
-	public float maxSpeed = 1f;
+	public float maxSpeed = 5f;
+	public float maxAccel = 5f;
 
 	// Lower is faster
 	public float torqueFactor = 8f;
