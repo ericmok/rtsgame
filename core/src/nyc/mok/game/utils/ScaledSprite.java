@@ -31,7 +31,7 @@ public class ScaledSprite extends Sprite {
     }
 
     public void scaledDraw(SpriteBatch spriteBatch, float x, float y, float dx, float dh, float angleInDegrees) {
-        setSize(dx * getTexture().getWidth() * Constants.PIXEL_TO_METERS, dh * getTexture().getHeight() * Constants.PIXEL_TO_METERS);
+        setSize(2 * dx * getTexture().getWidth() * Constants.PIXEL_TO_METERS, 2 * dh * getTexture().getHeight() * Constants.PIXEL_TO_METERS);
         setOrigin(getWidth() / 2, getHeight() / 2);
 
         setPosition(x - getWidth() / 2, y - getHeight() / 2);
