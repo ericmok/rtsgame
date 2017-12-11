@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import nyc.mok.game.components.BattleUnitComponent;
+import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.BattleUnitTypeComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.utils.ScaledSprite;
@@ -26,7 +26,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     ScaledSprite scaledSprite;
 
     public RenderBattleUnitSystem(SpriteBatch spriteBatch, OrthographicCamera orthographicCamera) {
-        super(Aspect.all(BattleUnitTypeComponent.class, BattleUnitComponent.class, PhysicsBody.class));
+        super(Aspect.all(BattleUnitTypeComponent.class, BattleBehaviorComponent.class, PhysicsBody.class));
         this.spriteBatch = spriteBatch;
         this.orthographicCamera = orthographicCamera;
     }
@@ -53,7 +53,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
         spriteBatch.end();
     }
 
-    private void drawMarine(PhysicsBody physicsBody, BattleUnitComponent battleUnitComponent) {
+    private void drawMarine(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent) {
         float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
 
         scaledSprite.setTexture(texture);
@@ -64,11 +64,11 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     protected void process(Entity e) {
         PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
         BattleUnitTypeComponent battleUnitTypeComponent = getWorld().getMapper(BattleUnitTypeComponent.class).get(e);
-        BattleUnitComponent battleUnitComponent = getWorld().getMapper(BattleUnitComponent.class).get(e);
+        BattleBehaviorComponent battleBehaviorComponent = getWorld().getMapper(BattleBehaviorComponent.class).get(e);
 
         switch (battleUnitTypeComponent.battleUnitType) {
             default:
-                drawMarine(physicsBody, battleUnitComponent);
+                drawMarine(physicsBody, battleBehaviorComponent);
                 break;
         }
     }

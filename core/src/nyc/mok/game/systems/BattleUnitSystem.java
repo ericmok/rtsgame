@@ -4,6 +4,7 @@ import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
@@ -14,7 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import nyc.mok.game.components.BattleUnitComponent;
+import nyc.mok.game.components.BattleBehaviorComponent;
+import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.MaxSpeedComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
@@ -32,13 +34,21 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	private ComponentMapper<PositionComponent> positionComponentComponentMapper;
 	private ComponentMapper<MaxSpeedComponent> maxSpeedComponentComponentMapper;
 	private ComponentMapper<SpawnLifecycleComponent> spawnLifecycleComponentComponentMapper;
-	private ComponentMapper<BattleUnitComponent> battleUnitComponentComponentMapper;
+	private ComponentMapper<BattleBehaviorComponent> battleUnitComponentComponentMapper;
+	private ComponentMapper<BattleAttackableComponent> battleAttackableComponentComponentMapper;
 	private ComponentMapper<PhysicsBody> physicsBodyComponentMapper;
 
 	private Vector2 acc = new Vector2();
 
 	public BattleUnitSystem(World box2dWorld) {
-		super(Aspect.all(PositionComponent.class, MaxSpeedComponent.class, SpawnLifecycleComponent.class, BattleUnitComponent.class, PhysicsBody.class));
+		super(Aspect.all(
+				PositionComponent.class,
+				MaxSpeedComponent.class,
+				SpawnLifecycleComponent.class,
+				BattleBehaviorComponent.class,
+				BattleAttackableComponent.class,
+				PhysicsBody.class));
+
 		this.box2dWorld = box2dWorld;
 	}
 
@@ -116,27 +126,33 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 			return fixtures;
 		}
 
-
 	}
 
 	Box2dQueryCallbackSortedByClosest box2DQueryCallbackSortedByClosest = new Box2dQueryCallbackSortedByClosest();
 
-	public BattleUnitComponent.BattleState doHasNoTargetBehavior(Entity e) {
+	public BattleBehaviorComponent.BattleState doHasNoTargetBehavior(Entity e) {
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
-		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
+		BattleBehaviorComponent battleBehaviorComponent = battleUnitComponentComponentMapper.get(e);
 
-		ArrayList<Fixture> fixtures = box2DQueryCallbackSortedByClosest.queryRangeForBody(physicsBody.body, battleUnitComponent.targetAcquisitionRange).finishReport();
+		// TODO: Handle field forces
+		physicsBody.body.setLinearVelocity(0,0);
+
+		// TODO: FILTER FOR PHYSICS BODIES THAT HAVE THE RIGHT COMPONENTS
+		ArrayList<Fixture> fixtures = box2DQueryCallbackSortedByClosest.queryRangeForBody(physicsBody.body, battleBehaviorComponent.targetAcquisitionRange).finishReport();
 
 		if (fixtures.size() > 0) {
 
 			if (!physicsBody.body.getFixtureList().contains(fixtures.get(0), true)) {
 				Entity otherEntity = (Entity) fixtures.get(0).getBody().getUserData();
-				BattleUnitComponent otherBattleUnitComponent = battleUnitComponentComponentMapper.get(otherEntity);
+				BattleBehaviorComponent otherBattleBehaviorComponent = battleUnitComponentComponentMapper.get(otherEntity);
 
-				if (otherBattleUnitComponent.isAttackable && otherBattleUnitComponent.hp > 0) {
-					battleUnitComponent.target = otherEntity.getId();
+				// TODO: Test this for non battle physics objects
+				BattleAttackableComponent otherBattleAttackableComponent = battleAttackableComponentComponentMapper.get(otherEntity);
 
-					return BattleUnitComponent.BattleState.MOVING_TOWARDS_TARGET;
+				if (otherBattleAttackableComponent.isAttackable && otherBattleAttackableComponent.hp > 0) {
+					battleBehaviorComponent.target = otherEntity.getId();
+
+					return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
 				}
 
 				// Debugging
@@ -147,31 +163,31 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		}
 
 		// Don't change state yet
-		return BattleUnitComponent.BattleState.HAS_NO_TARGET;
+		return BattleBehaviorComponent.BattleState.HAS_NO_TARGET;
 	}
 
-	public BattleUnitComponent.BattleState doMoveTowardsTarget(Entity e) {
-		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
+	public BattleBehaviorComponent.BattleState doMoveTowardsTarget(Entity e) {
+		BattleBehaviorComponent battleBehaviorComponent = battleUnitComponentComponentMapper.get(e);
 
 		// Hopefully EntityLinkSystem will manage this
-		if (battleUnitComponent.target == BattleUnitComponent.NO_ENTITY) {
-			return BattleUnitComponent.BattleState.HAS_NO_TARGET;
+		if (battleBehaviorComponent.target == BattleBehaviorComponent.NO_ENTITY) {
+			return BattleBehaviorComponent.BattleState.HAS_NO_TARGET;
 		}
 
-		BattleUnitComponent targetBattleUnitComponent = battleUnitComponentComponentMapper.get(battleUnitComponent.target);
+		BattleAttackableComponent targetBattleAttackableComponent = battleAttackableComponentComponentMapper.get(battleBehaviorComponent.target);
 
 		// Maybe it got attacked earlier - but component needs to removed when hp <= 0 asap
 		// to ignore this case...
-		if (targetBattleUnitComponent.hp <= 0) {
-			return BattleUnitComponent.BattleState.HAS_NO_TARGET;
+		if (targetBattleAttackableComponent.hp <= 0) {
+			return BattleBehaviorComponent.BattleState.HAS_NO_TARGET;
 		}
 
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
-		PhysicsBody targetPhysicsBody = physicsBodyComponentMapper.get(battleUnitComponent.target);
+		PhysicsBody targetPhysicsBody = physicsBodyComponentMapper.get(battleBehaviorComponent.target);
 
-		if (physicsBody.body.getPosition().dst(targetPhysicsBody.body.getPosition()) <= battleUnitComponent.rangeToBeginAttacking) {
-			battleUnitComponent.battleProgress = 0;
-			return BattleUnitComponent.BattleState.SWINGING;
+		if (physicsBody.body.getPosition().dst(targetPhysicsBody.body.getPosition()) <= battleBehaviorComponent.rangeToBeginAttacking) {
+			battleBehaviorComponent.battleProgress = 0;
+			return BattleBehaviorComponent.BattleState.SWINGING;
 		}
 
 		// Move towards target
@@ -193,23 +209,62 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 		physicsBody.body.getLinearVelocity().clamp(0, maxSpeed);
 
-		return BattleUnitComponent.BattleState.MOVING_TOWARDS_TARGET;
+		return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+	}
+
+	public BattleBehaviorComponent.BattleState doSwinging(Entity e) {
+		// Slow the unit down gradually if it is swinging
+		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+		physicsBody.body.getLinearVelocity().scl(0.001f);
+
+		BattleBehaviorComponent battleBehaviorComponent = battleUnitComponentComponentMapper.get(e);
+
+		if (battleBehaviorComponent.target == BattleBehaviorComponent.NO_ENTITY) {
+			return BattleBehaviorComponent.BattleState.HAS_NO_TARGET;
+		}
+
+		battleBehaviorComponent.battleProgress += Gdx.graphics.getDeltaTime();
+
+		if (battleBehaviorComponent.battleProgress >= 1f) {
+			// SWING means managing attack types like AOE, missiles, instant
+			return BattleBehaviorComponent.BattleState.CASTING;
+		}
+
+		return BattleBehaviorComponent.BattleState.SWINGING;
+	}
+
+	public BattleBehaviorComponent.BattleState doCasting(Entity e) {
+
+		// Test if target still valid and within range
+		// Create damage event: instant, missile launch, aoe launch, aoeLinear launch
+		// Handle damage elsewhere..?
+		// Go to cooldown
+
+
+		return BattleBehaviorComponent.BattleState.CASTING;
 	}
 
 	@Override
 	protected void process(Entity e) {
-		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
+		BattleBehaviorComponent battleBehaviorComponent = battleUnitComponentComponentMapper.get(e);
 
 		// Test HP <= 0 and remove with every hp mutation
 
-		switch (battleUnitComponent.battleState) {
+		// Only in any state, field forces can interrupt movement?
+		// or... add a new battle state "DirectedBattleMovement"
+
+		switch (battleBehaviorComponent.battleState) {
 			case HAS_NO_TARGET:
-				battleUnitComponent.battleState = doHasNoTargetBehavior(e);
+				battleBehaviorComponent.battleState = doHasNoTargetBehavior(e);
 				break;
 			case MOVING_TOWARDS_TARGET:
-				battleUnitComponent.battleState = doMoveTowardsTarget(e);
+				battleBehaviorComponent.battleState = doMoveTowardsTarget(e);
 				break;
 			case SWINGING:
+				battleBehaviorComponent.battleState = doSwinging(e);
+				break;
+			case CASTING:
+				battleBehaviorComponent.battleState = doCasting(e);
 				break;
 		}
 

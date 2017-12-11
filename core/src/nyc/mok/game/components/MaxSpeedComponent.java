@@ -7,5 +7,5 @@ import com.artemis.Component;
  */
 
 public class MaxSpeedComponent extends Component {
-    public float maxSpeed = 2f;
+    public float maxSpeed = 1f;
 }

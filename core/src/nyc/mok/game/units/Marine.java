@@ -7,7 +7,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 
-import nyc.mok.game.components.BattleUnitComponent;
+import nyc.mok.game.components.BattleBehaviorComponent;
+import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleUnitTypeComponent;
 import nyc.mok.game.components.MaxSpeedComponent;
 import nyc.mok.game.components.PhysicsBody;
@@ -36,9 +37,12 @@ public class Marine {
         BattleUnitTypeComponent battleUnitTypeComponent = ecs.getMapper(BattleUnitTypeComponent.class).create(e);
         battleUnitTypeComponent.battleUnitType = BattleUnitTypeComponent.BattleUnitType.MARINE;
 
+        BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
+        battleAttackableComponent.hp = 10;
+
         MaxSpeedComponent maxSpeedComponent = ecs.getMapper(MaxSpeedComponent.class).create(e);
 
-        ecs.getMapper(BattleUnitComponent.class).create(e);
+        ecs.getMapper(BattleBehaviorComponent.class).create(e);
     }
 
     /**
@@ -47,7 +51,7 @@ public class Marine {
     public static void createPhysics(World ecs, Entity e, com.badlogic.gdx.physics.box2d.World box2dWorld, float x, float y) {
 
         PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).get(e);
-        BattleUnitComponent battleUnitComponent = ecs.getMapper(BattleUnitComponent.class).get(e);
+        BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).get(e);
 
         Gdx.app.log("ASDF", "ASDF");
         // TODO: Check if body already exists
@@ -70,20 +74,20 @@ public class Marine {
 
         physicsBody.body.setUserData(e);
 //
-//        battleUnitComponent.targetAcquisitionDef = new BodyDef();
-//        battleUnitComponent.targetAcquisitionDef.battleUnitType = BodyDef.BodyType.DynamicBody;
-//        battleUnitComponent.targetAcquisitionDef.position.set(physicsBody.initialX, physicsBody.initialY);
+//        battleBehaviorComponent.targetAcquisitionDef = new BodyDef();
+//        battleBehaviorComponent.targetAcquisitionDef.battleUnitType = BodyDef.BodyType.DynamicBody;
+//        battleBehaviorComponent.targetAcquisitionDef.position.set(physicsBody.initialX, physicsBody.initialY);
 //
 //        circle = new CircleShape();
 //        circle.setRadius(128f * 8);
 //
-//        battleUnitComponent.targetAcquisition = box2dWorld.createBody(battleUnitComponent.targetAcquisitionDef);
+//        battleBehaviorComponent.targetAcquisition = box2dWorld.createBody(battleBehaviorComponent.targetAcquisitionDef);
 //
 //        FixtureDef fixtureDef = new FixtureDef();
 //        fixtureDef.shape = circle;
 //        fixtureDef.isSensor = true;
 //
-//        battleUnitComponent.targetAcquisition.createFixture(fixtureDef);
+//        battleBehaviorComponent.targetAcquisition.createFixture(fixtureDef);
 //
 //        circle.dispose();
     }
