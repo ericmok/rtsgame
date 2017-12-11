@@ -11,8 +11,11 @@ public class BattleUnitComponent extends Component {
         HAS_NO_TARGET,
         TRYING_TO_MEET_CONDITION_TO_CAST_ON_TARGET,
         SWINGING,
+        CASTING,
         WAITING_FOR_COOLDOWN
     }
+
+    public float battleProgress = 0;
 
     public BattleState battleState = BattleState.HAS_NO_TARGET;
 

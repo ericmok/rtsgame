@@ -27,6 +27,12 @@ import nyc.mok.game.components.SpawnLifecycleComponent;
 public class BattleUnitSystem extends EntityProcessingSystem {
 	private World box2dWorld;
 
+	// These are injected
+	private ComponentMapper<PositionComponent> positionComponentComponentMapper;
+	private ComponentMapper<SpawnLifecycleComponent> spawnLifecycleComponentComponentMapper;
+	private ComponentMapper<BattleUnitComponent> battleUnitComponentComponentMapper;
+	private ComponentMapper<PhysicsBody> physicsBodyComponentMapper;
+
 	public BattleUnitSystem(World box2dWorld) {
 		super(Aspect.all(PositionComponent.class, SpawnLifecycleComponent.class, BattleUnitComponent.class, PhysicsBody.class));
 		this.box2dWorld = box2dWorld;
@@ -34,7 +40,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	@Override
 	public void removed(Entity e) {
-		PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
+		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
 		box2dWorld.destroyBody(physicsBody.body);
 	}
 
@@ -111,13 +117,24 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	Box2dQueryCallbackSortedByClosest box2DQueryCallbackSortedByClosest = new Box2dQueryCallbackSortedByClosest();
 
+	public BattleUnitComponent.BattleState doHasNoTargetBehavior() {
+
+		// Don't change state yet
+		return BattleUnitComponent.BattleState.HAS_NO_TARGET;
+	}
+
 	@Override
 	protected void process(Entity e) {
-		ComponentMapper<BattleUnitComponent> battleUnitComponentComponentMapper = world.getMapper(BattleUnitComponent.class);
-		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
 
-		ComponentMapper<PhysicsBody> physicsBodyComponentMapper = world.getMapper(PhysicsBody.class);
+		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+
+		switch (battleUnitComponent.battleState) {
+			case HAS_NO_TARGET:
+				doHasNoTargetBehavior();
+				break;
+		}
+
 
 		ArrayList<Fixture> fixtures = box2DQueryCallbackSortedByClosest.queryRangeForBody(physicsBody.body, battleUnitComponent.targetAcquisitionRange).finishReport();
 
