@@ -7,10 +7,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 
-import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.BattleAttackableComponent;
+import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.BattleUnitTypeComponent;
-import nyc.mok.game.components.MaxSpeedComponent;
+import nyc.mok.game.components.MoveTargetsComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
@@ -40,7 +40,8 @@ public class Marine {
         BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
         battleAttackableComponent.hp = 10;
 
-        MaxSpeedComponent maxSpeedComponent = ecs.getMapper(MaxSpeedComponent.class).create(e);
+        MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
+        moveTargetsComponent.maxSpeed = 0.5f;
 
         ecs.getMapper(BattleBehaviorComponent.class).create(e);
     }

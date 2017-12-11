@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 
 import nyc.mok.game.systems.BattleUnitSystem;
+import nyc.mok.game.systems.MovementSystem;
 import nyc.mok.game.systems.PositionFromPhysicsSystem;
 import nyc.mok.game.systems.RenderBattleUnitSystem;
 import nyc.mok.game.systems.SpawningBattleUnitSystem;
@@ -62,12 +63,13 @@ public class MyGame implements Screen, InputProcessor {
                 .with(new SpawningBattleUnitSystem(box2dWorld))
                 .with(new PositionFromPhysicsSystem())
                 .with(new BattleUnitSystem(box2dWorld))
+                .with(new MovementSystem())
                 .with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))
                 .build();
 
         ecs = new World(config);
 
-        debugRenderer = new Box2DDebugRenderer(true, true, true, true, true, true);
+        debugRenderer = new Box2DDebugRenderer(true, true, false, true, true, true);
 
         Gdx.input.setInputProcessor(this);
     }

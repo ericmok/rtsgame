@@ -17,7 +17,7 @@ import java.util.Comparator;
 
 import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.BattleAttackableComponent;
-import nyc.mok.game.components.MaxSpeedComponent;
+import nyc.mok.game.components.MoveTargetsComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
@@ -32,10 +32,10 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	// These are injected
 	private ComponentMapper<PositionComponent> positionComponentComponentMapper;
-	private ComponentMapper<MaxSpeedComponent> maxSpeedComponentComponentMapper;
 	private ComponentMapper<SpawnLifecycleComponent> spawnLifecycleComponentComponentMapper;
-	private ComponentMapper<BattleBehaviorComponent> battleUnitComponentComponentMapper;
+	private ComponentMapper<BattleBehaviorComponent> battleBehaviorComponentMapper;
 	private ComponentMapper<BattleAttackableComponent> battleAttackableComponentComponentMapper;
+	private ComponentMapper<MoveTargetsComponent> moveTargetsMapper;
 	private ComponentMapper<PhysicsBody> physicsBodyComponentMapper;
 
 	private Vector2 acc = new Vector2();
@@ -43,10 +43,10 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	public BattleUnitSystem(World box2dWorld) {
 		super(Aspect.all(
 				PositionComponent.class,
-				MaxSpeedComponent.class,
 				SpawnLifecycleComponent.class,
 				BattleBehaviorComponent.class,
 				BattleAttackableComponent.class,
+				MoveTargetsComponent.class,
 				PhysicsBody.class));
 
 		this.box2dWorld = box2dWorld;
@@ -132,7 +132,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	public BattleBehaviorComponent.BattleState doHasNoTargetBehavior(Entity e) {
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
-		BattleBehaviorComponent battleBehaviorComponent = battleUnitComponentComponentMapper.get(e);
+		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
 
 		// TODO: Handle field forces
 		physicsBody.body.setLinearVelocity(0,0);
@@ -144,7 +144,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 			if (!physicsBody.body.getFixtureList().contains(fixtures.get(0), true)) {
 				Entity otherEntity = (Entity) fixtures.get(0).getBody().getUserData();
-				BattleBehaviorComponent otherBattleBehaviorComponent = battleUnitComponentComponentMapper.get(otherEntity);
+				BattleBehaviorComponent otherBattleBehaviorComponent = battleBehaviorComponentMapper.get(otherEntity);
 
 				// TODO: Test this for non battle physics objects
 				BattleAttackableComponent otherBattleAttackableComponent = battleAttackableComponentComponentMapper.get(otherEntity);
@@ -167,7 +167,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	}
 
 	public BattleBehaviorComponent.BattleState doMoveTowardsTarget(Entity e) {
-		BattleBehaviorComponent battleBehaviorComponent = battleUnitComponentComponentMapper.get(e);
+		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
 
 		// Hopefully EntityLinkSystem will manage this
 		if (battleBehaviorComponent.target == BattleBehaviorComponent.NO_ENTITY) {
@@ -187,27 +187,12 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 		if (physicsBody.body.getPosition().dst(targetPhysicsBody.body.getPosition()) <= battleBehaviorComponent.rangeToBeginAttacking) {
 			battleBehaviorComponent.battleProgress = 0;
+			moveTargetsMapper.get(e).entityToMoveTowards = -1;
+
 			return BattleBehaviorComponent.BattleState.SWINGING;
 		}
 
-		// Move towards target
-//		physicsBody.body.setLinearVelocity(targetPhysicsBody.body.getPosition().x - physicsBody.body.getPosition().x,
-//				targetPhysicsBody.body.getPosition().y - physicsBody.body.getPosition().y);
-//
-//		physicsBody.body.getLinearVelocity().nor().scl(maxSpeedComponentComponentMapper.get(e).maxSpeed);
-
-		acc.set(targetPhysicsBody.body.getPosition().x - physicsBody.body.getPosition().x,
-				targetPhysicsBody.body.getPosition().y - physicsBody.body.getPosition().y);
-
-		float maxSpeed = maxSpeedComponentComponentMapper.get(e).maxSpeed;
-
-		acc.nor().scl(maxSpeed / 4);
-
-		physicsBody.body.applyLinearImpulse(acc.x, acc.y,
-				physicsBody.body.getPosition().x,
-				physicsBody.body.getPosition().y, true);
-
-		physicsBody.body.getLinearVelocity().clamp(0, maxSpeed);
+		moveTargetsMapper.get(e).entityToMoveTowards = battleBehaviorComponent.target;
 
 		return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
 	}
@@ -217,7 +202,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
 		physicsBody.body.getLinearVelocity().scl(0.001f);
 
-		BattleBehaviorComponent battleBehaviorComponent = battleUnitComponentComponentMapper.get(e);
+		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
 
 		if (battleBehaviorComponent.target == BattleBehaviorComponent.NO_ENTITY) {
 			return BattleBehaviorComponent.BattleState.HAS_NO_TARGET;
@@ -225,7 +210,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 		battleBehaviorComponent.battleProgress += Gdx.graphics.getDeltaTime();
 
-		if (battleBehaviorComponent.battleProgress >= 1f) {
+		if (battleBehaviorComponent.battleProgress >= battleBehaviorComponent.swingTime) {
 			// SWING means managing attack types like AOE, missiles, instant
 			return BattleBehaviorComponent.BattleState.CASTING;
 		}
@@ -240,13 +225,15 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		// Handle damage elsewhere..?
 		// Go to cooldown
 
+		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
+		battleBehaviorComponent.battleProgress = 0;
 
 		return BattleBehaviorComponent.BattleState.CASTING;
 	}
 
 	@Override
 	protected void process(Entity e) {
-		BattleBehaviorComponent battleBehaviorComponent = battleUnitComponentComponentMapper.get(e);
+		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
 
 		// Test HP <= 0 and remove with every hp mutation
 
