@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import nyc.mok.game.systems.BattleUnitSystem;
 import nyc.mok.game.systems.PositionFromPhysicsSystem;
 import nyc.mok.game.systems.RenderBattleUnitSystem;
+import nyc.mok.game.systems.SpawningBattleUnitSystem;
 import nyc.mok.game.units.Marine;
 
 
@@ -57,6 +58,7 @@ public class MyGame implements Screen, InputProcessor {
 
         WorldConfiguration config = new WorldConfigurationBuilder()
 //                .dependsOn()
+                .with(new SpawningBattleUnitSystem(box2dWorld))
                 .with(new PositionFromPhysicsSystem())
                 .with(new BattleUnitSystem(box2dWorld))
                 .with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))

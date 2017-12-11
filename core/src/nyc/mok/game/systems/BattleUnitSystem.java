@@ -18,7 +18,6 @@ import nyc.mok.game.components.BattleUnitComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
-import nyc.mok.game.units.Marine;
 
 /**
  * Created by taco on 12/9/17.
@@ -90,20 +89,6 @@ public class BattleUnitSystem extends EntityProcessingSystem {
         ComponentMapper<PhysicsBody> physicsBodyComponentMapper = world.getMapper(PhysicsBody.class);
         PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
 
-        ComponentMapper<SpawnLifecycleComponent> spawnLifecycleComponentComponentMapper = world.getMapper(SpawnLifecycleComponent.class);
-        SpawnLifecycleComponent spawnLifecycleComponent = spawnLifecycleComponentComponentMapper.get(e);
-
-        if (spawnLifecycleComponent.lifeCycle == SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW) {
-            switch (battleUnitComponent.typeToSpawn) {
-                default:
-                    createMarinePhysics(e);
-                    break;
-            }
-
-            physicsBody.body.setLinearVelocity(0, 0);
-            spawnLifecycleComponent.lifeCycle = SpawnLifecycleComponent.LifeCycle.ALIVE;
-        }
-
         box2dWorld.QueryAABB(targetAcquisitionCallback.init(e),
                 physicsBody.body.getPosition().x - battleUnitComponent.targetAcquisitionRange,
                 physicsBody.body.getPosition().y - battleUnitComponent.targetAcquisitionRange,
@@ -120,14 +105,6 @@ public class BattleUnitSystem extends EntityProcessingSystem {
                 }
             }
         }
-    }
-
-    /**
-     * Allocate box2d resources for the entity containing physics and battle bodies.
-     */
-    private void createMarinePhysics(Entity e) {
-        PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
-        Marine.createPhysics(getWorld(), e, box2dWorld, physicsBody.initialX, physicsBody. initialY);
     }
 
 }

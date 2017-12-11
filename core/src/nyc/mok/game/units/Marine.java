@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 
 import nyc.mok.game.components.BattleUnitComponent;
+import nyc.mok.game.components.BattleUnitTypeComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
@@ -30,7 +31,11 @@ public class Marine {
         physicsBody.initialX = x;
         physicsBody.initialY = y;
         ecs.getMapper(SpawnLifecycleComponent.class).create(e).lifeCycle = SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW;
-        ecs.getMapper(BattleUnitComponent.class).create(e).typeToSpawn = BattleUnitComponent.Type.MARINE;
+
+        BattleUnitTypeComponent battleUnitTypeComponent = ecs.getMapper(BattleUnitTypeComponent.class).create(e);
+        battleUnitTypeComponent.battleUnitType = BattleUnitTypeComponent.BattleUnitType.MARINE;
+
+        ecs.getMapper(BattleUnitComponent.class).create(e);
     }
 
     /**
@@ -63,7 +68,7 @@ public class Marine {
         physicsBody.body.setUserData(e);
 //
 //        battleUnitComponent.targetAcquisitionDef = new BodyDef();
-//        battleUnitComponent.targetAcquisitionDef.type = BodyDef.BodyType.DynamicBody;
+//        battleUnitComponent.targetAcquisitionDef.battleUnitType = BodyDef.BodyType.DynamicBody;
 //        battleUnitComponent.targetAcquisitionDef.position.set(physicsBody.initialX, physicsBody.initialY);
 //
 //        circle = new CircleShape();

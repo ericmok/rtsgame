@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import nyc.mok.game.components.BattleUnitComponent;
+import nyc.mok.game.components.BattleUnitTypeComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.utils.ScaledSprite;
 
@@ -25,7 +26,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     ScaledSprite scaledSprite;
 
     public RenderBattleUnitSystem(SpriteBatch spriteBatch, OrthographicCamera orthographicCamera) {
-        super(Aspect.all(BattleUnitComponent.class, PhysicsBody.class));
+        super(Aspect.all(BattleUnitTypeComponent.class, BattleUnitComponent.class, PhysicsBody.class));
         this.spriteBatch = spriteBatch;
         this.orthographicCamera = orthographicCamera;
     }
@@ -52,26 +53,23 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
         spriteBatch.end();
     }
 
+    private void drawMarine(PhysicsBody physicsBody, BattleUnitComponent battleUnitComponent) {
+        float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
+
+        scaledSprite.setTexture(texture);
+        scaledSprite.scaledDraw(spriteBatch, physicsBody.body.getPosition().x, physicsBody.body.getPosition().y, physicsBody.body.getLinearVelocity().angle() - 90);
+    }
+
     @Override
     protected void process(Entity e) {
         PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
+        BattleUnitTypeComponent battleUnitTypeComponent = getWorld().getMapper(BattleUnitTypeComponent.class).get(e);
         BattleUnitComponent battleUnitComponent = getWorld().getMapper(BattleUnitComponent.class).get(e);
 
-
-        float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
-
-//        sprite.setTexture(texture);
-//        sprite.setSize(2 *texture.getWidth() * MyGame.PIXEL_TO_METERS, 2 * texture.getHeight() * MyGame.PIXEL_TO_METERS);
-//        sprite.setOrigin(sprite.getWidth()/2, sprite.getHeight()/2);
-//
-//        //sprite.setPosition(physicsBody.body.getPosition().x - radius, physicsBody.body.getPosition().y - radius);
-//        sprite.setPosition(physicsBody.body.getPosition().x - radius, physicsBody.body.getPosition().y - radius);
-//
-//        sprite.setRotation(physicsBody.body.getLinearVelocity().angle() - 90);
-//        sprite.draw(spriteBatch);
-        scaledSprite.setTexture(texture);
-        scaledSprite.setPosition(physicsBody.body.getPosition().x - radius, physicsBody.body.getPosition().y - radius);
-        scaledSprite.setRotation(physicsBody.body.getLinearVelocity().angle() - 90);
-        scaledSprite.scaledDraw(spriteBatch, physicsBody.body.getPosition().x, physicsBody.body.getPosition().y, physicsBody.body.getLinearVelocity().angle() - 90);
+        switch (battleUnitTypeComponent.battleUnitType) {
+            default:
+                drawMarine(physicsBody, battleUnitComponent);
+                break;
+        }
     }
 }
