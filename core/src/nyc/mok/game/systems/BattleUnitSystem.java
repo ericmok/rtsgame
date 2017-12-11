@@ -239,6 +239,10 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 			if (hasDied) {
 				getWorld().delete(battleBehaviorComponent.target);
 				battleBehaviorComponent.target = -1; // Should be managed, but doing it anyway to be explicit
+				targetBattleAttackable.lastAttacker = -1; // Can we do this? Not sure if this is recycled correctly
+			}
+			else {
+				targetBattleAttackable.lastAttacker = e.getId();
 			}
 		} else {
 			// If it never casted... why wait for cooldown?
