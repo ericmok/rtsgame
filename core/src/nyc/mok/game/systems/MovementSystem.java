@@ -55,26 +55,30 @@ public class MovementSystem extends EntityProcessingSystem {
 //					physicsBody.body.getPosition().x,
 //					physicsBody.body.getPosition().y, true);
 
-			// Arrival distance clamping: red3d.com/cwr/papers/1999/gdc99steer.pdf
 			float dst = targetPhysicsBody.body.getPosition().dst(physicsBody.body.getPosition());
-//			float ramp = maxSpeed * (dst / battleBehavior.rangeToBeginAttacking);
-//			float clampedSpeed = Math.min(maxSpeed, ramp);
 
-			//accTwo.clamp(0, maxSpeed);
+			// Was needed before when impulse was applied incorrectly
+			// physicsBody.body.setLinearVelocity(0, 0);
 
 			if (dst > battleBehavior.rangeToBeginAttacking && dst < battleBehavior.maxAttackRange) {
 				float clampedSpeed = maxSpeed * ((dst - battleBehavior.rangeToBeginAttacking) / (battleBehavior.maxAttackRange - battleBehavior.rangeToBeginAttacking));
-				//accTwo.nor().scl(clampedSpeed);
 				accTwo.nor().scl(clampedSpeed);
+
 				physicsBody.body.setLinearVelocity(accTwo);
+
+//				accTwo.add(-physicsBody.body.getLinearVelocity().x, -physicsBody.body.getLinearVelocity().y);
+//				physicsBody.body.applyLinearImpulse(accTwo, physicsBody.body.getPosition(), true);
 			}
 			else if (dst < battleBehavior.rangeToBeginAttacking) {
 				physicsBody.body.setLinearVelocity(0, 0);
 			} else {
-				//physicsBody.body.applyLinearImpulse(accTwo.nor().scl(maxSpeed), physicsBody.body.getWorldCenter(), true);
-				physicsBody.body.setLinearVelocity(accTwo.nor().scl(maxSpeed));
+				//physicsBody.body.setLinearVelocity(accTwo.nor().scl(maxSpeed));
 
-//				accTwo.nor().scl(moveTargets.maxAccel);
+				accTwo.nor().scl(maxSpeed).add(-physicsBody.body.getLinearVelocity().x, -physicsBody.body.getLinearVelocity().y).scl(moveTargets.rampUpToMaxSpeedTimeFactor);
+				physicsBody.body.applyLinearImpulse(accTwo, physicsBody.body.getWorldCenter(), true);
+
+				// Acceleration test...
+//				accTwo.nor().scl(moveTargets.rampUpToMaxSpeedTimeFactor);
 //				physicsBody.body.applyForceToCenter(accTwo.x, accTwo.y, true);
 //				physicsBody.body.getLinearVelocity().clamp(0, maxSpeed);
 			}
