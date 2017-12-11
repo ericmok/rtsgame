@@ -3,6 +3,7 @@ package nyc.mok.game;
 import com.artemis.World;
 import com.artemis.WorldConfiguration;
 import com.artemis.WorldConfigurationBuilder;
+import com.artemis.link.EntityLinkManager;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -57,7 +58,7 @@ public class MyGame implements Screen, InputProcessor {
         box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, 0f), true);
 
         WorldConfiguration config = new WorldConfigurationBuilder()
-//                .dependsOn()
+                .dependsOn(EntityLinkManager.class)
                 .with(new SpawningBattleUnitSystem(box2dWorld))
                 .with(new PositionFromPhysicsSystem())
                 .with(new BattleUnitSystem(box2dWorld))

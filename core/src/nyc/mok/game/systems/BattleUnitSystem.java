@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import nyc.mok.game.components.BattleUnitComponent;
+import nyc.mok.game.components.MaxSpeedComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
@@ -29,12 +30,15 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	// These are injected
 	private ComponentMapper<PositionComponent> positionComponentComponentMapper;
+	private ComponentMapper<MaxSpeedComponent> maxSpeedComponentComponentMapper;
 	private ComponentMapper<SpawnLifecycleComponent> spawnLifecycleComponentComponentMapper;
 	private ComponentMapper<BattleUnitComponent> battleUnitComponentComponentMapper;
 	private ComponentMapper<PhysicsBody> physicsBodyComponentMapper;
 
+	private Vector2 acc = new Vector2();
+
 	public BattleUnitSystem(World box2dWorld) {
-		super(Aspect.all(PositionComponent.class, SpawnLifecycleComponent.class, BattleUnitComponent.class, PhysicsBody.class));
+		super(Aspect.all(PositionComponent.class, MaxSpeedComponent.class, SpawnLifecycleComponent.class, BattleUnitComponent.class, PhysicsBody.class));
 		this.box2dWorld = box2dWorld;
 	}
 
@@ -87,7 +91,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		public boolean reportFixture(Fixture fixture) {
 			if (bodyQuery) {
 				// TODO: Go through fixture list
-				if (body.getFixtureList().get(0) != fixture) {
+				if (!body.getFixtureList().contains(fixture, true)) {
 					fixtures.add(fixture);
 				}
 			}
@@ -117,36 +121,98 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	Box2dQueryCallbackSortedByClosest box2DQueryCallbackSortedByClosest = new Box2dQueryCallbackSortedByClosest();
 
-	public BattleUnitComponent.BattleState doHasNoTargetBehavior() {
+	public BattleUnitComponent.BattleState doHasNoTargetBehavior(Entity e) {
+		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
+
+		ArrayList<Fixture> fixtures = box2DQueryCallbackSortedByClosest.queryRangeForBody(physicsBody.body, battleUnitComponent.targetAcquisitionRange).finishReport();
+
+		if (fixtures.size() > 0) {
+
+			if (!physicsBody.body.getFixtureList().contains(fixtures.get(0), true)) {
+				Entity otherEntity = (Entity) fixtures.get(0).getBody().getUserData();
+				BattleUnitComponent otherBattleUnitComponent = battleUnitComponentComponentMapper.get(otherEntity);
+
+				if (otherBattleUnitComponent.isAttackable && otherBattleUnitComponent.hp > 0) {
+					battleUnitComponent.target = otherEntity.getId();
+
+					return BattleUnitComponent.BattleState.MOVING_TOWARDS_TARGET;
+				}
+
+				// Debugging
+				//Vector2 vector2 = fixtures.get(0).getBody().getPosition();
+				//physicsBody.body.setLinearVelocity(vector2.x - physicsBody.body.getPosition().x, vector2.y - physicsBody.body.getPosition().y);
+			}
+
+		}
 
 		// Don't change state yet
 		return BattleUnitComponent.BattleState.HAS_NO_TARGET;
 	}
 
+	public BattleUnitComponent.BattleState doMoveTowardsTarget(Entity e) {
+		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
+
+		// Hopefully EntityLinkSystem will manage this
+		if (battleUnitComponent.target == BattleUnitComponent.NO_ENTITY) {
+			return BattleUnitComponent.BattleState.HAS_NO_TARGET;
+		}
+
+		BattleUnitComponent targetBattleUnitComponent = battleUnitComponentComponentMapper.get(battleUnitComponent.target);
+
+		// Maybe it got attacked earlier - but component needs to removed when hp <= 0 asap
+		// to ignore this case...
+		if (targetBattleUnitComponent.hp <= 0) {
+			return BattleUnitComponent.BattleState.HAS_NO_TARGET;
+		}
+
+		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+		PhysicsBody targetPhysicsBody = physicsBodyComponentMapper.get(battleUnitComponent.target);
+
+		if (physicsBody.body.getPosition().dst(targetPhysicsBody.body.getPosition()) <= battleUnitComponent.rangeToBeginAttacking) {
+			battleUnitComponent.battleProgress = 0;
+			return BattleUnitComponent.BattleState.SWINGING;
+		}
+
+		// Move towards target
+//		physicsBody.body.setLinearVelocity(targetPhysicsBody.body.getPosition().x - physicsBody.body.getPosition().x,
+//				targetPhysicsBody.body.getPosition().y - physicsBody.body.getPosition().y);
+//
+//		physicsBody.body.getLinearVelocity().nor().scl(maxSpeedComponentComponentMapper.get(e).maxSpeed);
+
+		acc.set(targetPhysicsBody.body.getPosition().x - physicsBody.body.getPosition().x,
+				targetPhysicsBody.body.getPosition().y - physicsBody.body.getPosition().y);
+
+		float maxSpeed = maxSpeedComponentComponentMapper.get(e).maxSpeed;
+
+		acc.nor().scl(maxSpeed / 4);
+
+		physicsBody.body.applyLinearImpulse(acc.x, acc.y,
+				physicsBody.body.getPosition().x,
+				physicsBody.body.getPosition().y, true);
+
+		physicsBody.body.getLinearVelocity().clamp(0, maxSpeed);
+
+		return BattleUnitComponent.BattleState.MOVING_TOWARDS_TARGET;
+	}
+
 	@Override
 	protected void process(Entity e) {
-
 		BattleUnitComponent battleUnitComponent = battleUnitComponentComponentMapper.get(e);
-		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+
+		// Test HP <= 0 and remove with every hp mutation
 
 		switch (battleUnitComponent.battleState) {
 			case HAS_NO_TARGET:
-				doHasNoTargetBehavior();
+				battleUnitComponent.battleState = doHasNoTargetBehavior(e);
+				break;
+			case MOVING_TOWARDS_TARGET:
+				battleUnitComponent.battleState = doMoveTowardsTarget(e);
+				break;
+			case SWINGING:
 				break;
 		}
 
-
-		ArrayList<Fixture> fixtures = box2DQueryCallbackSortedByClosest.queryRangeForBody(physicsBody.body, battleUnitComponent.targetAcquisitionRange).finishReport();
-
-		if (fixtures.size() > 0) {
-			for (int i = 0; i < fixtures.size(); i++) {
-				if (fixtures.get(i) != physicsBody.body.getFixtureList().get(0)) {
-					Entity entity = (Entity) fixtures.get(i).getBody().getUserData();
-					Vector2 vector2 = fixtures.get(i).getBody().getPosition();
-					physicsBody.body.setLinearVelocity(vector2.x - physicsBody.body.getPosition().x, vector2.y - physicsBody.body.getPosition().y);
-				}
-			}
-		}
 	}
 
 }

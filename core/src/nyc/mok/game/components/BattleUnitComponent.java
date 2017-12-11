@@ -1,6 +1,7 @@
 package nyc.mok.game.components;
 
 import com.artemis.Component;
+import com.artemis.annotations.EntityId;
 import com.artemis.annotations.PooledWeaver;
 
 @PooledWeaver
@@ -9,7 +10,7 @@ public class BattleUnitComponent extends Component {
 
     public enum BattleState {
         HAS_NO_TARGET,
-        TRYING_TO_MEET_CONDITION_TO_CAST_ON_TARGET,
+        MOVING_TOWARDS_TARGET,
         SWINGING,
         CASTING,
         WAITING_FOR_COOLDOWN
@@ -53,7 +54,7 @@ public class BattleUnitComponent extends Component {
     public float swingTime = 1;
     public float cooldownTime = 1;
 
-    public int target = NO_ENTITY;
+    @EntityId public int target = NO_ENTITY;
 
     /// If the attack is sticky, the attack target is obtained at target acquisition time
     /// but not re-evaluated during attack swing
