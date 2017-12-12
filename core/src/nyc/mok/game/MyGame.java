@@ -1,11 +1,13 @@
 package nyc.mok.game;
 
+import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.WorldConfiguration;
 import com.artemis.WorldConfigurationBuilder;
 import com.artemis.link.EntityLinkManager;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -15,7 +17,16 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import nyc.mok.game.components.BattleUnitTypeComponent;
 import nyc.mok.game.systems.BattleUnitSystem;
 import nyc.mok.game.systems.MovementSystem;
 import nyc.mok.game.systems.PositionFromPhysicsSystem;
@@ -41,6 +52,20 @@ public class MyGame implements Screen, InputProcessor {
     Vector3 touchPos = new Vector3(0, 0, 0);
 
     Game game;
+
+    private Stage stage;
+    private Skin skin;
+    private Table table;
+    private TextButton spawnMarineButton;
+    private TextButton spawnTriangleButton;
+    private TextButton spawnSquareButton;
+
+    private enum UnitMode {
+        MARINE,
+        TRIANGLE,
+        SQUARE
+    }
+    private UnitMode unitMode = UnitMode.MARINE;
 
     MyGame(Game game) {
         this.game = game;
@@ -71,7 +96,65 @@ public class MyGame implements Screen, InputProcessor {
 
         debugRenderer = new Box2DDebugRenderer(true, true, false, true, true, true);
 
-        Gdx.input.setInputProcessor(this);
+        //Gdx.input.setInputProcessor(this);
+        Gdx.input.setInputProcessor(new InputMultiplexer(setupStage(), this));
+    }
+
+    public Stage setupStage() {
+
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        stage = new Stage(new ScreenViewport());
+
+        skin.getFont("default-font").getData().setScale(4);
+
+        table = new Table();
+        table.setWidth(stage.getWidth());
+        table.setFillParent(true);
+
+        table.align(Align.left | Align.top);
+        table.setPosition(0, Gdx.graphics.getHeight());
+        table.setPosition(0, 0);
+
+        table.row();
+
+        spawnMarineButton = new TextButton("MARINE", skin);
+        spawnMarineButton.setSize(400, 300);
+        spawnMarineButton.addListener(new ClickListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                unitMode = UnitMode.MARINE;
+                return super.touchDown(event, x, y, pointer, button);
+            }
+        });
+        table.add(spawnMarineButton).width(400).height(200).padBottom(50);
+        table.row();
+
+        spawnTriangleButton = new TextButton("TRIANGLE", skin);
+        spawnTriangleButton.setSize(400, 300);
+        spawnTriangleButton.addListener(new ClickListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                unitMode = UnitMode.TRIANGLE;
+                return super.touchDown(event, x, y, pointer, button);
+            }
+        });
+        table.add(spawnTriangleButton).width(400).height(200).padBottom(50);
+        table.row();
+
+        spawnSquareButton = new TextButton("SQUARE", skin);
+        spawnSquareButton.setSize(400, 300);
+        spawnSquareButton.addListener(new ClickListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                unitMode = UnitMode.SQUARE;
+                return super.touchDown(event, x, y, pointer, button);
+            }
+        });
+        table.add(spawnSquareButton).width(400).height(200);
+        table.row();
+
+        stage.addActor(table);
+        return stage;
     }
 
     public void step(float delta) {
@@ -82,6 +165,10 @@ public class MyGame implements Screen, InputProcessor {
 
         ecs.setDelta(delta);
         ecs.process();
+
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.draw();
+
         doPhysicsStep(delta);
 
         batch.setProjectionMatrix(orthographicCamera.combined);
@@ -167,9 +254,16 @@ public class MyGame implements Screen, InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
 
-        // TODO: Test concurrency with ecs in game loop
-        Marine.create(ecs, touchPos.x, touchPos.y);
-
+        if (unitMode == UnitMode.MARINE) {
+            // TODO: Test concurrency with ecs in game loop
+            Marine.create(ecs, touchPos.x, touchPos.y);
+        } else if (unitMode == UnitMode.TRIANGLE) {
+            Entity e = Marine.create(ecs, touchPos.x, touchPos.y);
+            ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.TRIANGLE;
+        } else if (unitMode == UnitMode.SQUARE) {
+            Entity e = Marine.create(ecs, touchPos.x, touchPos.y);
+            ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.SQUARE;
+        }
         return false;
     }
 

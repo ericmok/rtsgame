@@ -23,6 +23,8 @@ import nyc.mok.game.utils.ScaledSprite;
 public class RenderBattleUnitSystem extends EntityProcessingSystem {
     SpriteBatch spriteBatch;
     Texture texture;
+    Texture triangleTexture;
+    Texture squareTexture;
     Texture simple_attack;
     OrthographicCamera orthographicCamera;
     Sprite sprite;
@@ -42,6 +44,8 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
         super.initialize();
 
         texture = new Texture(Gdx.files.internal("marine.png"));
+        triangleTexture = new Texture(Gdx.files.internal("triangle.png"));
+        squareTexture = new Texture(Gdx.files.internal("square.png"));
         simple_attack = new Texture(Gdx.files.internal("simple_attack.png"));
         sprite = new Sprite(texture);
         scaledSprite = new ScaledSprite(texture);
@@ -60,15 +64,24 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
         spriteBatch.end();
     }
 
-    private void drawMarine(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent) {
-        float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
+    private void drawSimpleBattleUnit(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent, Texture texture, float radius) {
+        //float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
 
         scaledSprite.setTexture(texture);
+//        scaledSprite.scaledDraw(spriteBatch,
+//                physicsBody.body.getPosition().x, physicsBody.body.getPosition().y,
+//                MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90);
         scaledSprite.scaledDraw(spriteBatch,
                 physicsBody.body.getPosition().x, physicsBody.body.getPosition().y,
+                radius, radius,
                 MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90);
                 //physicsBody.body.getLinearVelocity().angle() - 90);
 
+
+        drawSimpleAttack(battleBehaviorComponent, physicsBody);
+    }
+
+    private void drawSimpleAttack(BattleBehaviorComponent battleBehaviorComponent, PhysicsBody physicsBody) {
         scaledSprite.setTexture(simple_attack);
 
         // Not sure if we need to check target again, swinging necessarily implies target...
@@ -104,8 +117,14 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
         BattleBehaviorComponent battleBehaviorComponent = getWorld().getMapper(BattleBehaviorComponent.class).get(e);
 
         switch (battleUnitTypeComponent.battleUnitType) {
+            case TRIANGLE:
+                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, triangleTexture, 2f);
+                break;
+            case SQUARE:
+                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, squareTexture, 1f);
+                break;
             default:
-                drawMarine(physicsBody, battleBehaviorComponent);
+                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, texture, 1f);
                 break;
         }
     }

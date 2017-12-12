@@ -10,7 +10,10 @@ public class BattleUnitTypeComponent extends Component {
     public enum BattleUnitType {
         MARINE,
         MEDIC,
-        TANK
+        TANK,
+        CIRCLE,
+        TRIANGLE,
+        SQUARE
     }
     public BattleUnitType battleUnitType = BattleUnitType.MARINE;
 
