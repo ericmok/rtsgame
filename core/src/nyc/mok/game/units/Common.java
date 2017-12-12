@@ -20,6 +20,15 @@ import nyc.mok.game.components.SpawnLifecycleComponent;
 
 public class Common {
 
+	public static final float RADIUS_METERS = 1;
+
+	private static final BodyDef TEMPLATE_BODY_DEF = createDynamicBodyDef(0, 0);
+	public static final BodyDef TEMPLATE_BODY_DEF_WITH_POSITION(float x, float y) {
+		TEMPLATE_BODY_DEF.position.set(x, y);
+		return TEMPLATE_BODY_DEF;
+	}
+	public static final FixtureDef TEMPLATE_FIXTURE_DEF = createCircleFixtureDef(RADIUS_METERS);
+
 	/**
 	 * Creates an entity with components to make this a battle unit.
 	 *
@@ -28,16 +37,20 @@ public class Common {
 	 * @param y
 	 * @return
 	 */
-	public static Entity create(World ecs, float x, float y, BodyDef bodyDef, FixtureDef fixtureDef) {
+	public static Entity create(World ecs, float x, float y) {
 		final Entity e = ecs.createEntity();
 
 		ecs.getMapper(PositionComponent.class).create(e).position.set(x, y);
 		final PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).create(e);
 
-		physicsBody.bodyDef = bodyDef;
-		physicsBody.fixtureDef = fixtureDef;
+		// These would be replaced by spawning system
+		//	physicsBody.bodyDef = bodyDef;
+		//	physicsBody.fixtureDef = fixtureDef;
 
-		ecs.getMapper(SpawnLifecycleComponent.class).create(e).lifeCycle = SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW;
+		final SpawnLifecycleComponent spawnLifecycleComponent = ecs.getMapper(SpawnLifecycleComponent.class).create(e);
+		spawnLifecycleComponent.lifeCycle = SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW;
+		spawnLifecycleComponent.initX = x;
+		spawnLifecycleComponent.initY = y;
 
 		final BattleUnitTypeComponent battleUnitTypeComponent = ecs.getMapper(BattleUnitTypeComponent.class).create(e);
 		final BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).create(e);
@@ -64,10 +77,6 @@ public class Common {
 		fixtureDef.density = 1;
 
 		return fixtureDef;
-	}
-
-	public static Entity createSimple(World ecs, float x, float y) {
-		return create(ecs, x, y, Common.createDynamicBodyDef(x, y), createCircleFixtureDef(1));
 	}
 
 //	/**

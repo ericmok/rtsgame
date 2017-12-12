@@ -11,7 +11,6 @@ import nyc.mok.game.components.PhysicsBody;
 
 public class Marine {
 
-    public static final float RADIUS_METERS = 1;
     public static final int HP = 10;
     public static final float SWING_TIME = 0.5f;
     public static final float COOLDOWN_TIME = 0.5f;
@@ -23,7 +22,7 @@ public class Marine {
      */
     public static Entity create(World ecs, float x, float y) {
         //Entity e = Common.create(ecs, x, y, Common.createDynamicBodyDef(x, y), Common.createCircleFixtureDef(1));
-        Entity e = Common.createSimple(ecs, x, y);
+        Entity e = Common.create(ecs, x, y);
 
         ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.MARINE;
 
@@ -43,7 +42,7 @@ public class Marine {
     }
 
     public static Entity createTriangle(World ecs, float x, float y) {
-        Entity e = Common.createSimple(ecs, x, y);
+        Entity e = Common.create(ecs, x, y);
 
         ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.TRIANGLE;
 
@@ -60,7 +59,7 @@ public class Marine {
     }
 
     public static Entity createSquare(World ecs, float x, float y) {
-        Entity e = Common.createSimple(ecs, x, y);
+        Entity e = Common.create(ecs, x, y);
 
         ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.SQUARE;
 

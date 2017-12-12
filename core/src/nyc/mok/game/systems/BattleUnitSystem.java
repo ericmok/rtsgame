@@ -55,10 +55,6 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	@Override
 	public void removed(Entity e) {
-		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
-
-		// TODO: Move this elsewhere to handle recycling better
-		box2dWorld.destroyBody(physicsBody.body);
 	}
 
 	class Box2dQueryCallbackSortedByClosest implements QueryCallback {

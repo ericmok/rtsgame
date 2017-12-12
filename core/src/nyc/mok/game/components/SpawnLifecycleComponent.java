@@ -14,4 +14,7 @@ public class SpawnLifecycleComponent extends Component {
     }
 
     public LifeCycle lifeCycle = LifeCycle.SPAWNING_RAW;
+
+    public float initX;
+    public float initY;
 }

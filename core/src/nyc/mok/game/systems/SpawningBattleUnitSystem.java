@@ -4,10 +4,13 @@ import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 
+import nyc.mok.game.components.BattleUnitTypeComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.SpawnLifecycleComponent;
+import nyc.mok.game.units.Common;
 
 /**
  * Created by taco on 12/10/17.
@@ -16,10 +19,11 @@ public class SpawningBattleUnitSystem extends EntityProcessingSystem {
 	private World box2dWorld;
 
 	ComponentMapper<SpawnLifecycleComponent> spawnLifecycleMapper;
+	ComponentMapper<BattleUnitTypeComponent> battleUnitTypeMapper;
 	ComponentMapper<PhysicsBody> physicsBodyMapper;
 
 	public SpawningBattleUnitSystem(World box2dWorld) {
-		super(Aspect.all(SpawnLifecycleComponent.class, PhysicsBody.class));
+		super(Aspect.all(SpawnLifecycleComponent.class, BattleUnitTypeComponent.class, PhysicsBody.class));
 		this.box2dWorld = box2dWorld;
 	}
 
@@ -34,6 +38,8 @@ public class SpawningBattleUnitSystem extends EntityProcessingSystem {
 		world.getMapper(SpawnLifecycleComponent.class).get(e).lifeCycle = SpawnLifecycleComponent.LifeCycle.INACTIVE;
 
 		// TODO: Recycle box2d resources?
+		PhysicsBody physicsBody = physicsBodyMapper.get(e);
+		box2dWorld.destroyBody(physicsBody.body);
 	}
 
 	@Override
@@ -50,13 +56,19 @@ public class SpawningBattleUnitSystem extends EntityProcessingSystem {
 	 */
 	private void createPhysicsBodies(Entity e) {
 		PhysicsBody physicsBody = physicsBodyMapper.get(e);
+		SpawnLifecycleComponent spawnLifecycle = spawnLifecycleMapper.get(e);
 
 		if (physicsBody.body == null) {
 			// TODO: Can't decide where to create bodyDefs and fixtureDefs
 
-			physicsBody.body = box2dWorld.createBody(physicsBody.bodyDef);
-			physicsBody.body.createFixture(physicsBody.fixtureDef);
-			physicsBody.body.setUserData(e);
+			switch (battleUnitTypeMapper.get(e).battleUnitType) {
+				default:
+					BodyDef bodyDef = Common.TEMPLATE_BODY_DEF_WITH_POSITION(spawnLifecycle.initX, spawnLifecycle.initY);
+					physicsBody.body = box2dWorld.createBody(bodyDef);
+					physicsBody.body.createFixture(Common.TEMPLATE_FIXTURE_DEF);
+					physicsBody.body.setUserData(e);
+				break;
+			}
 		}
 	}
 
