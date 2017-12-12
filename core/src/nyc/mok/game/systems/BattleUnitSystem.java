@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import nyc.mok.game.Constants;
 import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.MoveTargetsComponent;
@@ -55,6 +56,8 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	@Override
 	public void removed(Entity e) {
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+
+		// TODO: Move this elsewhere to handle recycling better
 		box2dWorld.destroyBody(physicsBody.body);
 	}
 
@@ -273,8 +276,28 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	 */
 	public static final boolean inflictDamage(BattleBehaviorComponent battleBehaviorComponent, BattleAttackableComponent battleAttackableComponent) {
 
+		BattleBehaviorComponent.AttackType attackType = battleBehaviorComponent.attackType;
+		BattleAttackableComponent.ArmorType armorType = battleAttackableComponent.armorType;
+
+		float damage = battleBehaviorComponent.attackDamage;
+		float bonus = Constants.RPS_BONUS_DAMAGE_FACTOR;
+
 		// TODO: Apply RCS sytsem here
-		battleAttackableComponent.hp -= battleBehaviorComponent.attackDamage;
+		if (attackType == BattleBehaviorComponent.AttackType.ROCK) {
+			if (armorType == BattleAttackableComponent.ArmorType.SCISSORS) {
+				damage *= bonus;
+			}
+		} else if (attackType == BattleBehaviorComponent.AttackType.PAPER) {
+			if (armorType == BattleAttackableComponent.ArmorType.ROCK) {
+				damage *= bonus;
+			}
+		} else { // Scissors
+			if (armorType == BattleAttackableComponent.ArmorType.PAPER) {
+				damage *= bonus;
+			}
+		}
+
+		battleAttackableComponent.hp -= damage;
 		return battleAttackableComponent.hp <= 0;
 	}
 

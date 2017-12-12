@@ -26,7 +26,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import nyc.mok.game.components.BattleUnitTypeComponent;
 import nyc.mok.game.systems.BattleUnitSystem;
 import nyc.mok.game.systems.MovementSystem;
 import nyc.mok.game.systems.PositionFromPhysicsSystem;
@@ -256,13 +255,11 @@ public class MyGame implements Screen, InputProcessor {
 
         if (unitMode == UnitMode.MARINE) {
             // TODO: Test concurrency with ecs in game loop
-            Marine.create(ecs, touchPos.x, touchPos.y);
+            Entity e = Marine.create(ecs, touchPos.x, touchPos.y);
         } else if (unitMode == UnitMode.TRIANGLE) {
-            Entity e = Marine.create(ecs, touchPos.x, touchPos.y);
-            ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.TRIANGLE;
+            Entity e = Marine.createTriangle(ecs, touchPos.x, touchPos.y);
         } else if (unitMode == UnitMode.SQUARE) {
-            Entity e = Marine.create(ecs, touchPos.x, touchPos.y);
-            ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.SQUARE;
+            Entity e = Marine.createSquare(ecs, touchPos.x, touchPos.y);
         }
         return false;
     }

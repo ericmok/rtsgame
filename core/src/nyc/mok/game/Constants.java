@@ -9,5 +9,7 @@ public class Constants {
 	public static float PIXEL_TO_METERS = 1.0f/256f;
 
 	// 84
-	public static float VIEWPORT_MIN_METERS = 50f;
+	public static float VIEWPORT_MIN_METERS = 60f;
+
+	public static float RPS_BONUS_DAMAGE_FACTOR = 5f;
 }
