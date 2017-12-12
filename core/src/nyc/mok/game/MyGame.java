@@ -16,7 +16,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.EdgeShape;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -97,6 +101,15 @@ public class MyGame implements Screen, InputProcessor {
 
         //Gdx.input.setInputProcessor(this);
         Gdx.input.setInputProcessor(new InputMultiplexer(setupStage(), this));
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(5, 20);
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        Body body = box2dWorld.createBody(bodyDef);
+        EdgeShape edgeShape = new EdgeShape();
+        edgeShape.set(-10, -10, 10, 10);
+        Fixture fixture = body.createFixture(edgeShape, 1);
+        fixture.getFilterData().categoryBits = Constants.BOX2D_CATEGORY_ENV;
     }
 
     public Stage setupStage() {

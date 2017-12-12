@@ -6,22 +6,19 @@ import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.QueryCallback;
 import com.badlogic.gdx.physics.box2d.World;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 import nyc.mok.game.Constants;
-import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.BattleAttackableComponent;
+import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.MoveTargetsComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
+import nyc.mok.game.utils.Box2dQueries;
 
 /**
  * Created by taco on 12/9/17.
@@ -57,77 +54,6 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	public void removed(Entity e) {
 	}
 
-	class Box2dQueryCallbackSortedByClosest implements QueryCallback {
-		private boolean bodyQuery = true;
-
-		public Body body;
-		private Vector2 pos = new Vector2();
-
-		private ArrayList<Fixture> fixtures = new ArrayList<Fixture>(32);
-
-		public Box2dQueryCallbackSortedByClosest queryRangeForBody(Body body, float range) {
-			bodyQuery = true;
-			this.body = body;
-
-			fixtures.clear();
-
-            pos.set(body.getPosition());
-
-			box2dWorld.QueryAABB(this,
-					pos.x - range,
-					pos.y - range,
-					pos.x + range,
-					pos.y + range);
-
-			return this;
-		}
-
-		public Box2dQueryCallbackSortedByClosest queryAABB(float x, float y, float range) {
-			bodyQuery = false;
-            fixtures.clear();
-
-            pos.set(x, y);
-			box2dWorld.QueryAABB(this,
-					x - range,
-					y - range,
-					x + range,
-					y + range);
-
-			return this;
-		}
-
-		@Override
-		public boolean reportFixture(Fixture fixture) {
-			if (bodyQuery) {
-				// TODO: Go through fixture list
-				if (!body.getFixtureList().contains(fixture, true)) {
-					fixtures.add(fixture);
-				}
-			}
-			else {
-				fixtures.add(fixture);
-			}
-			return true;
-		}
-
-		public ArrayList<Fixture> finishReport() {
-			Collections.sort(fixtures, new Comparator<Fixture>() {
-				@Override
-				public int compare(Fixture fixture, Fixture t1) {
-					float res1 = fixture.getBody().getPosition().dst(pos);
-					float res2 = t1.getBody().getPosition().dst(pos);
-
-					if (res1 > res2) return 1;
-					if (res1 == res2) return 0;
-					return -1;
-				}
-			});
-			return fixtures;
-		}
-
-	}
-
-	Box2dQueryCallbackSortedByClosest box2DQueryCallbackSortedByClosest = new Box2dQueryCallbackSortedByClosest();
 
 	public BattleBehaviorComponent.BattleState doHasNoTargetBehavior(Entity e) {
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
@@ -137,26 +63,29 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		physicsBody.body.setLinearVelocity(0,0);
 
 		// TODO: FILTER FOR PHYSICS BODIES THAT HAVE THE RIGHT COMPONENTS
-		ArrayList<Fixture> fixtures = box2DQueryCallbackSortedByClosest.queryRangeForBody(physicsBody.body, battleBehaviorComponent.targetAcquisitionRange).finishReport();
+		ArrayList<Fixture> fixtures = 	Box2dQueries.instance(box2dWorld).closest((short)0xFFFF, Constants.BOX2D_CATEGORY_UNITS, (short)0xFFFF).queryRangeForBody(physicsBody.body, battleBehaviorComponent.targetAcquisitionRange).finishReport();
 
+		boolean fixtureForBattleUnitFound = false;
 		if (fixtures.size() > 0) {
 
 			if (!physicsBody.body.getFixtureList().contains(fixtures.get(0), true)) {
 				Entity otherEntity = (Entity) fixtures.get(0).getBody().getUserData();
 				BattleBehaviorComponent otherBattleBehaviorComponent = battleBehaviorComponentMapper.get(otherEntity);
-
-				// TODO: Test this for non battle physics objects
 				BattleAttackableComponent otherBattleAttackableComponent = battleAttackableComponentComponentMapper.get(otherEntity);
 
-				if (otherBattleAttackableComponent.isAttackable && otherBattleAttackableComponent.hp > 0) {
-					battleBehaviorComponent.target = otherEntity.getId();
+				// Test if the bodies are actually battle units as opposed to walls / doodads
+				if (otherBattleBehaviorComponent != null || otherBattleAttackableComponent != null) {
 
-					return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+					if (otherBattleAttackableComponent.isAttackable && otherBattleAttackableComponent.hp > 0) {
+						battleBehaviorComponent.target = otherEntity.getId();
+
+						return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+					}
+
+					// Debugging
+					//Vector2 vector2 = fixtures.get(0).getBody().getPosition();
+					//physicsBody.body.setLinearVelocity(vector2.x - physicsBody.body.getPosition().x, vector2.y - physicsBody.body.getPosition().y);
 				}
-
-				// Debugging
-				//Vector2 vector2 = fixtures.get(0).getBody().getPosition();
-				//physicsBody.body.setLinearVelocity(vector2.x - physicsBody.body.getPosition().x, vector2.y - physicsBody.body.getPosition().y);
 			}
 
 		}

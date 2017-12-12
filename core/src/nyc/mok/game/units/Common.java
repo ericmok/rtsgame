@@ -6,6 +6,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
+import nyc.mok.game.Constants;
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.BattleUnitTypeComponent;
@@ -21,6 +22,7 @@ import nyc.mok.game.components.SpawnLifecycleComponent;
 public class Common {
 
 	public static final float RADIUS_METERS = 1;
+	public static final short FILTER_CATEGORIES = Constants.BOX2D_CATEGORY_UNITS;
 
 	private static final BodyDef TEMPLATE_BODY_DEF = createDynamicBodyDef(0, 0);
 	public static final BodyDef TEMPLATE_BODY_DEF_WITH_POSITION(float x, float y) {
@@ -75,6 +77,7 @@ public class Common {
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = circleShape;
 		fixtureDef.density = 1;
+		fixtureDef.filter.categoryBits = FILTER_CATEGORIES;
 
 		return fixtureDef;
 	}
