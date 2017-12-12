@@ -14,13 +14,22 @@ import nyc.mok.game.units.Marine;
 /**
  * Created by taco on 12/10/17.
  */
-
 public class SpawningBattleUnitSystem extends EntityProcessingSystem {
     private World box2dWorld;
 
 	public SpawningBattleUnitSystem(World box2dWorld) {
-		super(Aspect.all(SpawnLifecycleComponent.class, BattleUnitTypeComponent.class));
+		super(Aspect.all(SpawnLifecycleComponent.class, PhysicsBody.class, BattleUnitTypeComponent.class));
 		this.box2dWorld = box2dWorld;
+	}
+
+	@Override
+	public void inserted(Entity e) {
+		world.getMapper(SpawnLifecycleComponent.class).get(e).lifeCycle = SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW;
+	}
+
+	@Override
+	public void removed(Entity e) {
+		world.getMapper(SpawnLifecycleComponent.class).get(e).lifeCycle = SpawnLifecycleComponent.LifeCycle.INACTIVE;
 	}
 
 	@Override
@@ -31,9 +40,10 @@ public class SpawningBattleUnitSystem extends EntityProcessingSystem {
         BattleUnitTypeComponent battleUnitTypeComponent = world.getMapper(BattleUnitTypeComponent.class).get(e);
 
         if (spawnLifecycleComponent.lifeCycle == SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW) {
+
             switch (battleUnitTypeComponent.battleUnitType) {
                 default:
-                    createMarinePhysics(e);
+                    createPhysicsBodies(e);
                     break;
             }
 
@@ -44,7 +54,7 @@ public class SpawningBattleUnitSystem extends EntityProcessingSystem {
     /**
      * Allocate box2d resources for the entity containing physics and battle bodies.
      */
-    private void createMarinePhysics(Entity e) {
+    private void createPhysicsBodies(Entity e) {
         PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
         Marine.createPhysics(getWorld(), e, box2dWorld, physicsBody.initialX, physicsBody. initialY);
     }
