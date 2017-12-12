@@ -2,9 +2,12 @@ package nyc.mok.game.units;
 
 import com.artemis.Entity;
 import com.artemis.World;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 
 import nyc.mok.game.Constants;
 import nyc.mok.game.components.BattleAttackableComponent;
@@ -21,15 +24,18 @@ import nyc.mok.game.components.SpawnLifecycleComponent;
 
 public class Common {
 
-	public static final float RADIUS_METERS = 1;
+	public static final float COMMON_UNIT_RADIUS = 1;
+	public static final float COMMON_UNIT_TARGET_ACQUISITION_RANGE = 8;
+
 	public static final short FILTER_CATEGORIES = Constants.BOX2D_CATEGORY_UNITS;
 
 	private static final BodyDef TEMPLATE_BODY_DEF = createDynamicBodyDef(0, 0);
-	public static final BodyDef TEMPLATE_BODY_DEF_WITH_POSITION(float x, float y) {
-		TEMPLATE_BODY_DEF.position.set(x, y);
-		return TEMPLATE_BODY_DEF;
-	}
-	public static final FixtureDef TEMPLATE_FIXTURE_DEF = createCircleFixtureDef(RADIUS_METERS);
+	private static final FixtureDef TEMPLATE_FIXTURE_DEF = createCircleFixtureDef(COMMON_UNIT_RADIUS);
+
+	private static BodyDef tempBodyDef = new BodyDef();
+	private static FixtureDef tempFixtureDef = new FixtureDef();
+	private static CircleShape tempCircleShape = new CircleShape();
+	private static PolygonShape polygonShape = new PolygonShape();
 
 	/**
 	 * Creates an entity with components to make this a battle unit.
@@ -56,6 +62,8 @@ public class Common {
 
 		final BattleUnitTypeComponent battleUnitTypeComponent = ecs.getMapper(BattleUnitTypeComponent.class).create(e);
 		final BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).create(e);
+		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
+
 		final BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
 		final MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
 
@@ -82,31 +90,66 @@ public class Common {
 		return fixtureDef;
 	}
 
-//	/**
-//	 * Create box2d bodies for all the components needed
-//	 */
-//	public static void createCircleBodyForPhysicsBody(World ecs, Entity e, com.badlogic.gdx.physics.box2d.World box2dWorld, float radius, float x, float y) {
-//
-//		PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).get(e);
-//
-//		// TODO: Check if body already exists
-//		// TODO: Recycle bodyDef and circles if possible
-//
-//		physicsBody.bodyDef = new BodyDef();
-//		physicsBody.bodyDef.type = BodyDef.BodyType.DynamicBody;
-//		physicsBody.bodyDef.position.set(physicsBody.initialX, physicsBody.initialY);
-//
-//		physicsBody.body = box2dWorld.createBody(physicsBody.bodyDef);
-//
-//		CircleShape circle = new CircleShape();
-//		circle.setRadius(radius);
-//		physicsBody.body.createFixture(circle, 1f);
-//
-//		// Remember to dispose of any shapes after you're done with them!
-//		// BodyDef and FixtureDef don't need disposing, but shapes do.
-//		circle.dispose();
-//
-//		physicsBody.body.setUserData(e);
-//	}
+	/**
+	 * Create box2d bodies for all the components needed
+	 */
+	public static Body createBody(com.badlogic.gdx.physics.box2d.World box2dWorld, float x, float y) {
+		BodyDef bodyDef = useTempBodyDef();
+		bodyDef.type = BodyDef.BodyType.DynamicBody;
+		bodyDef.position.set(x, y);
 
+		Body body = box2dWorld.createBody(bodyDef);
+
+		CircleShape circle = tempCircleShape;
+		circle.setPosition(Vector2.Zero);
+		circle.setRadius(COMMON_UNIT_RADIUS);
+		FixtureDef fixtureDef = useTempFixtureDef();
+		fixtureDef.filter.categoryBits = Constants.BOX2D_CATEGORY_UNITS;
+		fixtureDef.shape = circle;
+		fixtureDef.density = 1;
+		body.createFixture(fixtureDef);
+
+		FixtureDef sensorDef = useTempFixtureDef();
+		circle.setPosition(Vector2.Zero);
+		circle.setRadius(COMMON_UNIT_TARGET_ACQUISITION_RANGE);
+		sensorDef.shape = circle;
+		sensorDef.density = 0;
+		sensorDef.isSensor = true;
+		sensorDef.filter.maskBits = Constants.BOX2D_CATEGORY_UNITS;
+		sensorDef.filter.groupIndex = 0; // Could set to -1 to make it not collide. Cool.
+		body.createFixture(sensorDef);
+
+		return body;
+	}
+
+	public static void copyBodyDef(BodyDef src, BodyDef dst) {
+		dst.position.set(src.position);
+		dst.type = src.type;
+		dst.active = src.active;
+		dst.allowSleep = src.allowSleep;
+		dst.angle = src.angle;
+		dst.angularDamping = src.angularDamping;
+		dst.angularVelocity = src.angularVelocity;
+		dst.awake = src.awake;
+		dst.bullet = src.bullet;
+		dst.fixedRotation = src.fixedRotation;
+		dst.gravityScale = src.gravityScale;
+		dst.linearDamping = src.linearDamping;
+		dst.linearVelocity.set(src.linearVelocity);
+	}
+
+	public static BodyDef useTempBodyDef() {
+		copyBodyDef(TEMPLATE_BODY_DEF, tempBodyDef);
+		return tempBodyDef;
+	}
+
+	public static FixtureDef useTempFixtureDef() {
+		FixtureDef fixtureDef = tempFixtureDef;
+		fixtureDef.isSensor = false;
+		fixtureDef.shape = null;
+		fixtureDef.filter.categoryBits = 0x0001;
+		fixtureDef.filter.maskBits = 1;
+		fixtureDef.filter.groupIndex = 0;
+		return fixtureDef;
+	}
 }

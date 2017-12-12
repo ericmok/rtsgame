@@ -4,7 +4,6 @@ import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 import nyc.mok.game.components.BattleUnitTypeComponent;
@@ -63,9 +62,7 @@ public class SpawningBattleUnitSystem extends EntityProcessingSystem {
 
 			switch (battleUnitTypeMapper.get(e).battleUnitType) {
 				default:
-					BodyDef bodyDef = Common.TEMPLATE_BODY_DEF_WITH_POSITION(spawnLifecycle.initX, spawnLifecycle.initY);
-					physicsBody.body = box2dWorld.createBody(bodyDef);
-					physicsBody.body.createFixture(Common.TEMPLATE_FIXTURE_DEF);
+					physicsBody.body = Common.createBody(box2dWorld, spawnLifecycle.initX, spawnLifecycle.initY);
 					physicsBody.body.setUserData(e);
 				break;
 			}
