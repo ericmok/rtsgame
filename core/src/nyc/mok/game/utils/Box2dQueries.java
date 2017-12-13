@@ -86,8 +86,10 @@ public class Box2dQueries {
 		}
 
 		public boolean matchFixture(Fixture fixture) {
-			short fixtureCategoryBits = fixture.getFilterData().categoryBits;
-			if ((fixtureCategoryBits & filter.categoryBits) != 0) {
+			Filter queryFixtureFilter = fixture.getFilterData();
+
+			if ((queryFixtureFilter.categoryBits & filter.maskBits) != 0 &&
+					queryFixtureFilter.groupIndex == filter.groupIndex) {
 				return true;
 			}
 			return false;

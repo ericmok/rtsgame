@@ -110,7 +110,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	 */
 	public int getTargetUsingWorldQuery(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent) {
 		// TODO: FILTER FOR PHYSICS BODIES THAT HAVE THE RIGHT COMPONENTS
-		ArrayList<Fixture> fixtures = 	Box2dQueries.instance(box2dWorld).closest((short)0xFFFF, Constants.BOX2D_CATEGORY_UNITS, (short)0xFFFF).queryRangeForBody(physicsBody.body, battleBehaviorComponent.targetAcquisitionRange).finishReport();
+		ArrayList<Fixture> fixtures = 	Box2dQueries.instance(box2dWorld).closest(Constants.BOX2D_CATEGORY_UNITS, Constants.BOX2D_CATEGORY_UNITS, (short)0).queryRangeForBody(physicsBody.body, battleBehaviorComponent.targetAcquisitionRange).finishReport();
 
 		boolean fixtureForBattleUnitFound = false;
 		if (fixtures.size() > 0) {
