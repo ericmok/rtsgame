@@ -25,7 +25,8 @@ import nyc.mok.game.components.SpawnLifecycleComponent;
 public class Common {
 
 	public static final float COMMON_UNIT_RADIUS = 1;
-	public static final float COMMON_UNIT_TARGET_ACQUISITION_RANGE = 8;
+	public static final float COMMON_UNIT_TARGET_ACQUISITION_RANGE = 7;
+	public static final float COMMON_UNIT_MAX_ATTACK_RANGE = 5;
 
 	public static final short FILTER_CATEGORIES = Constants.BOX2D_CATEGORY_UNITS;
 
@@ -63,6 +64,7 @@ public class Common {
 		final BattleUnitTypeComponent battleUnitTypeComponent = ecs.getMapper(BattleUnitTypeComponent.class).create(e);
 		final BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).create(e);
 		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
+		battleBehaviorComponent.maxAttackRange = COMMON_UNIT_MAX_ATTACK_RANGE;
 
 		final BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
 		final MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
@@ -105,6 +107,8 @@ public class Common {
 		circle.setRadius(COMMON_UNIT_RADIUS);
 		FixtureDef fixtureDef = useTempFixtureDef();
 		fixtureDef.filter.categoryBits = Constants.BOX2D_CATEGORY_UNITS;
+		fixtureDef.filter.maskBits = (short)(Constants.BOX2D_CATEGORY_UNITS | Constants.BOX2D_CATEGORY_SENSORS);
+		fixtureDef.filter.groupIndex = 0;
 		fixtureDef.shape = circle;
 		fixtureDef.density = 1;
 		body.createFixture(fixtureDef);
@@ -115,6 +119,7 @@ public class Common {
 		sensorDef.shape = circle;
 		sensorDef.density = 0;
 		sensorDef.isSensor = true;
+		sensorDef.filter.categoryBits = Constants.BOX2D_CATEGORY_SENSORS;
 		sensorDef.filter.maskBits = Constants.BOX2D_CATEGORY_UNITS;
 		sensorDef.filter.groupIndex = 0; // Could set to -1 to make it not collide. Cool.
 		body.createFixture(sensorDef);

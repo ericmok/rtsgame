@@ -50,18 +50,65 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		this.box2dWorld = box2dWorld;
 	}
 
+	public void processContact(Fixture fixtureA, Fixture fixtureB) {
+		Entity e = (Entity)fixtureA.getBody().getUserData();
+
+		if (e != null) {
+			BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
+			if (battleBehaviorComponent.battleState == BattleBehaviorComponent.BattleState.HAS_NO_TARGET) {
+				Entity otherEntity = (Entity) fixtureB.getBody().getUserData();
+				if (otherEntity != null) {
+					BattleAttackableComponent battleAttackable = battleAttackableComponentComponentMapper.get(otherEntity);
+
+					if (battleAttackable != null && battleAttackable.isAttackable && battleAttackable.hp > 0) {
+						battleBehaviorComponent.target = otherEntity.getId();
+						battleBehaviorComponent.battleState = BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void begin() {
+//		box2dWorld.setContactListener(new ContactListener() {
+//			@Override
+//			public void beginContact(Contact contact) {
+//				Gdx.app.log("Contact", "contact");
+//				processContact(contact.getFixtureA(), contact.getFixtureB());
+//				processContact(contact.getFixtureB(), contact.getFixtureA());
+//			}
+//
+//			@Override
+//			public void endContact(Contact contact) {
+//
+//			}
+//
+//			@Override
+//			public void preSolve(Contact contact, Manifold oldManifold) {
+//
+//			}
+//
+//			@Override
+//			public void postSolve(Contact contact, ContactImpulse impulse) {
+//
+//			}
+//		});
+	}
+
 	@Override
 	public void removed(Entity e) {
 	}
 
+	public int getTargetUsingSensors(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent) {
+		// TODO: Is this slower?
+		return  -1;
+	}
 
-	public BattleBehaviorComponent.BattleState doHasNoTargetBehavior(Entity e) {
-		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
-		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
-
-		// TODO: Handle field forces
-		physicsBody.body.setLinearVelocity(0,0);
-
+	/**
+	 * @return The entityId of the target. -1 if no target.
+	 */
+	public int getTargetUsingWorldQuery(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent) {
 		// TODO: FILTER FOR PHYSICS BODIES THAT HAVE THE RIGHT COMPONENTS
 		ArrayList<Fixture> fixtures = 	Box2dQueries.instance(box2dWorld).closest((short)0xFFFF, Constants.BOX2D_CATEGORY_UNITS, (short)0xFFFF).queryRangeForBody(physicsBody.body, battleBehaviorComponent.targetAcquisitionRange).finishReport();
 
@@ -79,7 +126,8 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 					if (otherBattleAttackableComponent.isAttackable && otherBattleAttackableComponent.hp > 0) {
 						battleBehaviorComponent.target = otherEntity.getId();
 
-						return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+						return battleBehaviorComponent.target;
+						//return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
 					}
 
 					// Debugging
@@ -89,6 +137,24 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 			}
 
 		}
+
+		return -1;
+	}
+
+
+	public BattleBehaviorComponent.BattleState doHasNoTargetBehavior(Entity e) {
+		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
+
+		// TODO: Handle field forces
+		physicsBody.body.setLinearVelocity(0,0);
+
+		// World query method
+		if (getTargetUsingWorldQuery(physicsBody, battleBehaviorComponent) != -1) {
+			return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+		}
+
+		// Sensor method is to use the contact listener...
 
 		// Don't change state yet
 		return BattleBehaviorComponent.BattleState.HAS_NO_TARGET;
