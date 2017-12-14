@@ -39,285 +39,285 @@ import nyc.mok.game.units.Wall;
 
 
 public class MyGame implements Screen, InputProcessor {
-    public World ecs;
-    com.badlogic.gdx.physics.box2d.World box2dWorld;
+	public World ecs;
+	com.badlogic.gdx.physics.box2d.World box2dWorld;
 
-    private float accumulator = 0;
-    Texture img;
+	private float accumulator = 0;
+	Texture img;
 
-    OrthographicCamera orthographicCamera;
+	OrthographicCamera orthographicCamera;
 
-    float elapsedTime = 0;
+	float elapsedTime = 0;
 
-    Box2DDebugRenderer debugRenderer;
+	Box2DDebugRenderer debugRenderer;
 
-    Vector3 touchPos = new Vector3(0, 0, 0);
+	Vector3 touchPos = new Vector3(0, 0, 0);
 
-    Game game;
+	Game game;
 
-    private Stage stage;
-    private Skin skin;
-    private Table table;
-    private TextButton spawnMarineButton;
-    private TextButton spawnTriangleButton;
-    private TextButton spawnSquareButton;
+	private Stage stage;
+	private Skin skin;
+	private Table table;
+	private TextButton spawnMarineButton;
+	private TextButton spawnTriangleButton;
+	private TextButton spawnSquareButton;
 
-    private SpriteBatch ecsBatch;
+	private SpriteBatch ecsBatch;
 
-    private enum UnitMode {
-        MARINE,
-        TRIANGLE,
-        SQUARE
-    }
-    private UnitMode unitMode = UnitMode.MARINE;
-    public PlayerManager playerManager = new PlayerManager();
+	private enum UnitMode {
+		MARINE,
+		TRIANGLE,
+		SQUARE
+	}
+	private UnitMode unitMode = UnitMode.MARINE;
+	public PlayerManager playerManager = new PlayerManager();
 
-    MyGame(Game game) {
-        this.game = game;
+	MyGame(Game game) {
+		this.game = game;
 }
 
-    public void create() {
-        ecsBatch = new SpriteBatch();
+	public void create() {
+		ecsBatch = new SpriteBatch();
 
-        // This camera will get resized more appropriately later
-        orthographicCamera = new OrthographicCamera(800, 600);
+		// This camera will get resized more appropriately later
+		orthographicCamera = new OrthographicCamera(800, 600);
 
-        img = new Texture(Gdx.files.internal("marine.png"));
+		img = new Texture(Gdx.files.internal("marine.png"));
 
-        ecsBatch.setProjectionMatrix(orthographicCamera.combined);
+		ecsBatch.setProjectionMatrix(orthographicCamera.combined);
 
-        box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, 0f), true);
+		box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, 0f), true);
 
-        WorldConfiguration config = new WorldConfigurationBuilder()
-                .dependsOn(EntityLinkManager.class)
-                .with(playerManager)
-                .with(new SpawningBattleUnitSystem(box2dWorld))
-                .with(new WallSystem(box2dWorld, ecsBatch, orthographicCamera))
-                .with(new PositionFromPhysicsSystem())
-                .with(new TargetsSystem(box2dWorld))
-                .with(new BattleUnitSystem(box2dWorld))
-                .with(new MovementSystem())
-                .with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))
-                .build();
+		WorldConfiguration config = new WorldConfigurationBuilder()
+				.dependsOn(EntityLinkManager.class)
+				.with(playerManager)
+				.with(new SpawningBattleUnitSystem(box2dWorld))
+				.with(new WallSystem(box2dWorld, ecsBatch, orthographicCamera))
+				.with(new PositionFromPhysicsSystem())
+				.with(new TargetsSystem(box2dWorld))
+				.with(new BattleUnitSystem(box2dWorld))
+				.with(new MovementSystem())
+				.with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))
+				.build();
 
-        ecs = new World(config);
+		ecs = new World(config);
 
-        debugRenderer = new Box2DDebugRenderer(true, true, false, true, true, true);
+		debugRenderer = new Box2DDebugRenderer(true, true, false, true, true, true);
 
-        setupStage();
-        Gdx.input.setInputProcessor(new InputMultiplexer(stage, this));
-    }
-
-
-    public Stage setupStage() {
-
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
-        stage = new Stage(new ScreenViewport());
-
-        skin.getFont("default-font").getData().setScale(4);
-
-        table = new Table();
-        table.setWidth(stage.getWidth());
-        table.setFillParent(true);
-
-        table.align(Align.left | Align.top);
-        table.setPosition(0, Gdx.graphics.getHeight());
-        table.setPosition(0, 0);
-
-        table.row();
-
-        spawnMarineButton = new TextButton("MARINE", skin);
-        spawnMarineButton.setSize(400, 300);
-        spawnMarineButton.addListener(new ClickListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                unitMode = UnitMode.MARINE;
-                return super.touchDown(event, x, y, pointer, button);
-            }
-        });
-        table.add(spawnMarineButton).width(400).height(200).padBottom(50);
-        table.row();
-
-        spawnTriangleButton = new TextButton("TRIANGLE", skin);
-        spawnTriangleButton.setSize(400, 300);
-        spawnTriangleButton.addListener(new ClickListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                unitMode = UnitMode.TRIANGLE;
-                return super.touchDown(event, x, y, pointer, button);
-            }
-        });
-        table.add(spawnTriangleButton).width(400).height(200).padBottom(50);
-        table.row();
-
-        spawnSquareButton = new TextButton("SQUARE", skin);
-        spawnSquareButton.setSize(400, 300);
-        spawnSquareButton.addListener(new ClickListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                unitMode = UnitMode.SQUARE;
-                return super.touchDown(event, x, y, pointer, button);
-            }
-        });
-        table.add(spawnSquareButton).width(400).height(200);
-        table.row();
-
-        stage.addActor(table);
-
-        float mapWidth = Constants.MAP_WIDTH;
-        float mapHeight = Constants.MAP_HEIGHT;
-
-        Wall.create(ecs, 0, -mapHeight, mapWidth, 1);
-        Wall.create(ecs, -mapWidth, 0, 1, mapHeight);
-        Wall.create(ecs, mapWidth, 1, 1, mapHeight);
-        Wall.create(ecs, 0, mapHeight, mapWidth, 1);
-
-        return stage;
-    }
-
-    public void step(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        orthographicCamera.update();
-        orthographicCamera.unproject(touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0));
-
-        ecsBatch.setProjectionMatrix(orthographicCamera.combined);
-        ecsBatch.begin();
-
-        ecs.setDelta(delta);
-        ecs.process();
-        ecsBatch.end();
-
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
+		setupStage();
+		Gdx.input.setInputProcessor(new InputMultiplexer(stage, this));
+	}
 
 
-        doPhysicsStep(delta);
+	public Stage setupStage() {
 
-        debugRenderer.render(box2dWorld, orthographicCamera.combined);
-    }
+		skin = new Skin(Gdx.files.internal("uiskin.json"));
+		stage = new Stage(new ScreenViewport());
 
-    private void doPhysicsStep(float deltaTime) {
-        // fixed time step
-        // max frame time to avoid spiral of death (on slow devices)
-        float frameTime = Math.min(deltaTime, 0.25f);
-        accumulator += frameTime;
-        while (accumulator >= 1f/60) {
-            accumulator -= 1f/60;
+		skin.getFont("default-font").getData().setScale(4);
 
-            box2dWorld.step(1f/60, 6, 2);
-        }
-    }
+		table = new Table();
+		table.setWidth(stage.getWidth());
+		table.setFillParent(true);
 
-    @Override
-    public void dispose() {
-        ecsBatch.dispose();
-        img.dispose();
-        stage.dispose();
-    }
+		table.align(Align.left | Align.top);
+		table.setPosition(0, Gdx.graphics.getHeight());
+		table.setPosition(0, 0);
 
-    @Override
-    public void show() {
+		table.row();
 
-    }
+		spawnMarineButton = new TextButton("MARINE", skin);
+		spawnMarineButton.setSize(400, 300);
+		spawnMarineButton.addListener(new ClickListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				unitMode = UnitMode.MARINE;
+				return super.touchDown(event, x, y, pointer, button);
+			}
+		});
+		table.add(spawnMarineButton).width(400).height(200).padBottom(50);
+		table.row();
 
-    @Override
-    public void render(float delta) {
-        float dt = Gdx.graphics.getDeltaTime();
-        elapsedTime += dt;
+		spawnTriangleButton = new TextButton("TRIANGLE", skin);
+		spawnTriangleButton.setSize(400, 300);
+		spawnTriangleButton.addListener(new ClickListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				unitMode = UnitMode.TRIANGLE;
+				return super.touchDown(event, x, y, pointer, button);
+			}
+		});
+		table.add(spawnTriangleButton).width(400).height(200).padBottom(50);
+		table.row();
 
-        this.step(dt);
-    }
+		spawnSquareButton = new TextButton("SQUARE", skin);
+		spawnSquareButton.setSize(400, 300);
+		spawnSquareButton.addListener(new ClickListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				unitMode = UnitMode.SQUARE;
+				return super.touchDown(event, x, y, pointer, button);
+			}
+		});
+		table.add(spawnSquareButton).width(400).height(200);
+		table.row();
 
-    @Override
-    public void resize(int width, int height) {
-        float aspectRatio = (float)width / height;
-        float scaledHeightInMeters = Constants.VIEWPORT_MIN_METERS;
+		stage.addActor(table);
 
-        orthographicCamera.setToOrtho(false, scaledHeightInMeters * aspectRatio, scaledHeightInMeters);
-        stage.getViewport().update(width, height);
-    }
+		float mapWidth = Constants.MAP_WIDTH;
+		float mapHeight = Constants.MAP_HEIGHT;
 
-    @Override
-    public void pause() {
+		Wall.create(ecs, 0, -mapHeight, mapWidth, 1);
+		Wall.create(ecs, -mapWidth, 0, 1, mapHeight);
+		Wall.create(ecs, mapWidth, 1, 1, mapHeight);
+		Wall.create(ecs, 0, mapHeight, mapWidth, 1);
 
-    }
+		return stage;
+	}
 
-    @Override
-    public void resume() {
+	public void step(float delta) {
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		orthographicCamera.update();
+		orthographicCamera.unproject(touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
-    }
+		ecsBatch.setProjectionMatrix(orthographicCamera.combined);
+		ecsBatch.begin();
 
-    @Override
-    public void hide() {
+		ecs.setDelta(delta);
+		ecs.process();
+		ecsBatch.end();
 
-    }
+		stage.act(Gdx.graphics.getDeltaTime());
+		stage.draw();
 
-    @Override
-    public boolean keyDown(int keycode) {
-        return false;
-    }
 
-    @Override
-    public boolean keyUp(int keycode) {
-        return false;
-    }
+		doPhysicsStep(delta);
 
-    @Override
-    public boolean keyTyped(char character) {
-        return false;
-    }
+		debugRenderer.render(box2dWorld, orthographicCamera.combined);
+	}
 
-    float prevX = 0;
-    float prevY = 0;
+	private void doPhysicsStep(float deltaTime) {
+		// fixed time step
+		// max frame time to avoid spiral of death (on slow devices)
+		float frameTime = Math.min(deltaTime, 0.25f);
+		accumulator += frameTime;
+		while (accumulator >= 1f/60) {
+			accumulator -= 1f/60;
 
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
+			box2dWorld.step(1f/60, 6, 2);
+		}
+	}
 
-        if (unitMode == UnitMode.MARINE) {
-            // TODO: Test concurrency with ecs in game loop
-            Entity e = Marine.create(ecs, playerManager, "marine", touchPos.x, touchPos.y);
-        } else if (unitMode == UnitMode.TRIANGLE) {
-            Entity e = Marine.createTriangle(ecs, playerManager, "triangle", touchPos.x, touchPos.y);
-        } else if (unitMode == UnitMode.SQUARE) {
-            Entity e = Marine.createSquare(ecs, playerManager, "square", touchPos.x, touchPos.y);
-        }
+	@Override
+	public void dispose() {
+		ecsBatch.dispose();
+		img.dispose();
+		stage.dispose();
+	}
 
-        prevX = touchPos.x;
-        prevY = touchPos.y;
+	@Override
+	public void show() {
 
-        return false;
-    }
+	}
 
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
-        prevX = touchPos.x;
-        prevY = touchPos.y;
-        return false;
-    }
+	@Override
+	public void render(float delta) {
+		float dt = Gdx.graphics.getDeltaTime();
+		elapsedTime += dt;
 
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
+		this.step(dt);
+	}
 
-        float deltaX = touchPos.x - prevX;
-        float deltaY = touchPos.y - prevY;
+	@Override
+	public void resize(int width, int height) {
+		float aspectRatio = (float)width / height;
+		float scaledHeightInMeters = Constants.VIEWPORT_MIN_METERS;
 
-        orthographicCamera.translate(-deltaX, -deltaY);
+		orthographicCamera.setToOrtho(false, scaledHeightInMeters * aspectRatio, scaledHeightInMeters);
+		stage.getViewport().update(width, height);
+	}
 
-        return false;
-    }
+	@Override
+	public void pause() {
 
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        return false;
-    }
+	}
 
-    @Override
-    public boolean scrolled(int amount) {
-        return false;
-    }
+	@Override
+	public void resume() {
+
+	}
+
+	@Override
+	public void hide() {
+
+	}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		return false;
+	}
+
+	@Override
+	public boolean keyUp(int keycode) {
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped(char character) {
+		return false;
+	}
+
+	float prevX = 0;
+	float prevY = 0;
+
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
+
+		if (unitMode == UnitMode.MARINE) {
+			// TODO: Test concurrency with ecs in game loop
+			Entity e = Marine.create(ecs, playerManager, "marine", touchPos.x, touchPos.y);
+		} else if (unitMode == UnitMode.TRIANGLE) {
+			Entity e = Marine.createTriangle(ecs, playerManager, "triangle", touchPos.x, touchPos.y);
+		} else if (unitMode == UnitMode.SQUARE) {
+			Entity e = Marine.createSquare(ecs, playerManager, "square", touchPos.x, touchPos.y);
+		}
+
+		prevX = touchPos.x;
+		prevY = touchPos.y;
+
+		return false;
+	}
+
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
+		prevX = touchPos.x;
+		prevY = touchPos.y;
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
+
+		float deltaX = touchPos.x - prevX;
+		float deltaY = touchPos.y - prevY;
+
+		orthographicCamera.translate(-deltaX, -deltaY);
+
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		return false;
+	}
 
 }
