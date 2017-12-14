@@ -17,6 +17,7 @@ import nyc.mok.game.components.MoveTargetsComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
+import nyc.mok.game.components.Targets;
 
 /**
  * Created by taco on 12/11/17.
@@ -60,6 +61,8 @@ public class Common {
 		spawnLifecycleComponent.lifeCycle = SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW;
 		spawnLifecycleComponent.initX = x;
 		spawnLifecycleComponent.initY = y;
+
+		final Targets targets = ecs.getMapper(Targets.class).create(e);
 
 		final BattleUnitTypeComponent battleUnitTypeComponent = ecs.getMapper(BattleUnitTypeComponent.class).create(e);
 		final BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).create(e);

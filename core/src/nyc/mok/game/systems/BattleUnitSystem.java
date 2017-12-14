@@ -18,6 +18,7 @@ import nyc.mok.game.components.MoveTargetsComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
+import nyc.mok.game.components.Targets;
 import nyc.mok.game.utils.Box2dQueries;
 
 /**
@@ -31,6 +32,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	// These are injected
 	private ComponentMapper<PositionComponent> positionComponentComponentMapper;
 	private ComponentMapper<SpawnLifecycleComponent> spawnLifecycleComponentComponentMapper;
+	private ComponentMapper<Targets> targetsComponentMapper;
 	private ComponentMapper<BattleBehaviorComponent> battleBehaviorComponentMapper;
 	private ComponentMapper<BattleAttackableComponent> battleAttackableComponentComponentMapper;
 	private ComponentMapper<MoveTargetsComponent> moveTargetsMapper;
@@ -42,6 +44,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		super(Aspect.all(
 				PositionComponent.class,
 				SpawnLifecycleComponent.class,
+				Targets.class,
 				BattleBehaviorComponent.class,
 				BattleAttackableComponent.class,
 				MoveTargetsComponent.class,
@@ -50,50 +53,8 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		this.box2dWorld = box2dWorld;
 	}
 
-	public void processContact(Fixture fixtureA, Fixture fixtureB) {
-		Entity e = (Entity)fixtureA.getBody().getUserData();
-
-		if (e != null) {
-			BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
-			if (battleBehaviorComponent.battleState == BattleBehaviorComponent.BattleState.HAS_NO_TARGET) {
-				Entity otherEntity = (Entity) fixtureB.getBody().getUserData();
-				if (otherEntity != null) {
-					BattleAttackableComponent battleAttackable = battleAttackableComponentComponentMapper.get(otherEntity);
-
-					if (battleAttackable != null && battleAttackable.isAttackable && battleAttackable.hp > 0) {
-						battleBehaviorComponent.target = otherEntity.getId();
-						battleBehaviorComponent.battleState = BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
-					}
-				}
-			}
-		}
-	}
-
 	@Override
 	protected void begin() {
-//		box2dWorld.setContactListener(new ContactListener() {
-//			@Override
-//			public void beginContact(Contact contact) {
-//				Gdx.app.log("Contact", "contact");
-//				processContact(contact.getFixtureA(), contact.getFixtureB());
-//				processContact(contact.getFixtureB(), contact.getFixtureA());
-//			}
-//
-//			@Override
-//			public void endContact(Contact contact) {
-//
-//			}
-//
-//			@Override
-//			public void preSolve(Contact contact, Manifold oldManifold) {
-//
-//			}
-//
-//			@Override
-//			public void postSolve(Contact contact, ContactImpulse impulse) {
-//
-//			}
-//		});
 	}
 
 	@Override
@@ -145,12 +106,33 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	public BattleBehaviorComponent.BattleState doHasNoTargetBehavior(Entity e) {
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
 		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
+		Targets targets = targetsComponentMapper.get(e);
 
 		// TODO: Handle field forces
 		physicsBody.body.setLinearVelocity(0,0);
 
 		// World query method
-		if (getTargetUsingWorldQuery(physicsBody, battleBehaviorComponent) != -1) {
+//		if (getTargetUsingWorldQuery(physicsBody, battleBehaviorComponent) != -1) {
+//			return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+//		}
+
+
+		if (targets.targets.size() > 0) {
+
+//			// Test for dead entities due to staleness of the list
+//			boolean validTarget = false;
+//			int i = 0;
+//			while (!validTarget && i <= battleBehaviorComponent.targets.size()) {
+//				battleBehaviorComponent.target = battleBehaviorComponent.targets.get(i).getId();
+//				if (battleBehaviorComponent.target != -1) {
+//					validTarget = true;
+//					battleBehaviorComponent.battleState = BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
+//				}
+//				i += 1;
+//			}
+
+			// Some of these ids might be stale?
+			battleBehaviorComponent.target = targets.targets.get(0).getId();
 			return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
 		}
 

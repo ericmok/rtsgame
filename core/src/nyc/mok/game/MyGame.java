@@ -35,6 +35,7 @@ import nyc.mok.game.systems.MovementSystem;
 import nyc.mok.game.systems.PositionFromPhysicsSystem;
 import nyc.mok.game.systems.RenderBattleUnitSystem;
 import nyc.mok.game.systems.SpawningBattleUnitSystem;
+import nyc.mok.game.systems.TargetsSystem;
 import nyc.mok.game.units.Marine;
 
 
@@ -90,6 +91,7 @@ public class MyGame implements Screen, InputProcessor {
                 .dependsOn(EntityLinkManager.class)
                 .with(new SpawningBattleUnitSystem(box2dWorld))
                 .with(new PositionFromPhysicsSystem())
+                .with(new TargetsSystem(box2dWorld))
                 .with(new BattleUnitSystem(box2dWorld))
                 .with(new MovementSystem())
                 .with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))

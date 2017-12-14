@@ -8,8 +8,6 @@ import com.badlogic.gdx.physics.box2d.QueryCallback;
 import com.badlogic.gdx.physics.box2d.World;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * Useful callbacks to pass to box2d world queries
@@ -110,17 +108,18 @@ public class Box2dQueries {
 		}
 
 		public ArrayList<Fixture> finishReport() {
-			Collections.sort(fixtures, new Comparator<Fixture>() {
-				@Override
-				public int compare(Fixture fixture, Fixture t1) {
-					float res1 = fixture.getBody().getPosition().dst(pos);
-					float res2 = t1.getBody().getPosition().dst(pos);
-
-					if (res1 > res2) return 1;
-					if (res1 == res2) return 0;
-					return -1;
-				}
-			});
+//			Collections.sort(fixtures, new Comparator<Fixture>() {
+//				@Override
+//				public int compare(Fixture fixture, Fixture t1) {
+//					float res1 = fixture.getBody().getPosition().dst(pos);
+//					float res2 = t1.getBody().getPosition().dst(pos);
+//
+//					if (res1 > res2) return 1;
+//					if (res1 == res2) return 0;
+//					return -1;
+//				}
+//			});
+			SortUtils.sortBasedOnDist(fixtures, pos);
 			return fixtures;
 		}
 

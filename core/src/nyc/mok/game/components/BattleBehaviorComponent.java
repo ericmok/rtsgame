@@ -59,4 +59,5 @@ public class BattleBehaviorComponent extends Component {
 	public boolean lockOnAttack = false;
 
 	public boolean attackSwingEvenWhenNotInRange = false;
+
 }
