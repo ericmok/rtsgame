@@ -167,29 +167,6 @@ public class MyGame implements Screen, InputProcessor {
         float mapWidth = Constants.MAP_WIDTH;
         float mapHeight = Constants.MAP_HEIGHT;
 
-//
-//        BodyDef bodyDef = new BodyDef();
-//        bodyDef.position.set(Constants.VIEWPORT_MIN_METERS, Constants.VIEWPORT_MIN_METERS);
-//        bodyDef.type = BodyDef.BodyType.StaticBody;
-//        Body body = box2dWorld.createBody(bodyDef);
-//
-//        EdgeShape edgeShape = new EdgeShape();
-//
-//
-//        edgeShape.set(-mapWidth / 2, -mapWidth, -mapWidth / 2, mapWidth);
-//        Fixture fixture = body.createFixture(edgeShape, 1);
-//
-//        edgeShape.set(-mapWidth / 2, mapWidth, mapWidth / 2, mapWidth);
-//        body.createFixture(edgeShape, 1);
-//
-//        edgeShape.set(mapWidth / 2, mapWidth, mapWidth / 2, -mapWidth);
-//        body.createFixture(edgeShape, 1);
-//
-//        edgeShape.set(mapWidth / 2, -mapWidth, -mapWidth / 2, -mapWidth);
-//        body.createFixture(edgeShape, 1);
-//
-//        fixture.getFilterData().categoryBits = Constants.BOX2D_CATEGORY_ENV;
-
         Wall.create(ecs, 0, -mapHeight, mapWidth, 1);
         Wall.create(ecs, -mapWidth, 0, 1, mapHeight);
         Wall.create(ecs, mapWidth, 1, 1, mapHeight);
