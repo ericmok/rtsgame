@@ -5,6 +5,7 @@ import com.artemis.World;
 import com.artemis.WorldConfiguration;
 import com.artemis.WorldConfigurationBuilder;
 import com.artemis.link.EntityLinkManager;
+import com.artemis.managers.PlayerManager;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -70,6 +71,7 @@ public class MyGame implements Screen, InputProcessor {
         SQUARE
     }
     private UnitMode unitMode = UnitMode.MARINE;
+    public PlayerManager playerManager = new PlayerManager();
 
     MyGame(Game game) {
         this.game = game;
@@ -89,6 +91,7 @@ public class MyGame implements Screen, InputProcessor {
 
         WorldConfiguration config = new WorldConfigurationBuilder()
                 .dependsOn(EntityLinkManager.class)
+                .with(playerManager)
                 .with(new SpawningBattleUnitSystem(box2dWorld))
                 .with(new PositionFromPhysicsSystem())
                 .with(new TargetsSystem(box2dWorld))
@@ -289,11 +292,11 @@ public class MyGame implements Screen, InputProcessor {
 
         if (unitMode == UnitMode.MARINE) {
             // TODO: Test concurrency with ecs in game loop
-            Entity e = Marine.create(ecs, touchPos.x, touchPos.y);
+            Entity e = Marine.create(ecs, playerManager, "marine", touchPos.x, touchPos.y);
         } else if (unitMode == UnitMode.TRIANGLE) {
-            Entity e = Marine.createTriangle(ecs, touchPos.x, touchPos.y);
+            Entity e = Marine.createTriangle(ecs, playerManager, "triangle", touchPos.x, touchPos.y);
         } else if (unitMode == UnitMode.SQUARE) {
-            Entity e = Marine.createSquare(ecs, touchPos.x, touchPos.y);
+            Entity e = Marine.createSquare(ecs, playerManager, "square", touchPos.x, touchPos.y);
         }
 
         prevX = touchPos.x;

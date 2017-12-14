@@ -4,6 +4,7 @@ import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.EntitySubscription;
+import com.artemis.managers.PlayerManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Contact;
@@ -37,6 +38,7 @@ public class TargetsSystem extends EntityProcessingSystem {
 	private BodyCaster<Targets> targetsBodyCaster = new BodyCaster<Targets>(Targets.class);
 
 	private EntitySubscription entitySubscription;
+	private PlayerManager playerManager;
 
 	public TargetsSystem(World box2dWorld) {
 		super(Aspect.all(Targets.class, PhysicsBody.class, BattleBehaviorComponent.class, BattleAttackableComponent.class));
@@ -103,7 +105,11 @@ public class TargetsSystem extends EntityProcessingSystem {
 
 			if (battleAttackable != null) {
 
-				if (battleAttackable.isAttackable && battleAttackable.hp > 0) {
+				if (battleAttackable.isAttackable &&
+						battleAttackable.hp > 0 &&
+						!playerManager.getPlayer((Entity)fixtureB.getBody().getUserData()).equals(
+						playerManager.getPlayer((Entity)fixtureA.getBody().getUserData()))
+					) {
 					//battleBehaviorComponent.target = ((Entity)(fixtureB.getBody().getUserData())).getId();
 					//battleBehaviorComponent.battleState = BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
 

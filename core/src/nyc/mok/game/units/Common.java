@@ -2,6 +2,7 @@ package nyc.mok.game.units;
 
 import com.artemis.Entity;
 import com.artemis.World;
+import com.artemis.managers.PlayerManager;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -26,7 +27,7 @@ import nyc.mok.game.components.Targets;
 public class Common {
 
 	public static final float COMMON_UNIT_RADIUS = 1;
-	public static final float COMMON_UNIT_TARGET_ACQUISITION_RANGE = 7;
+	public static final float COMMON_UNIT_TARGET_ACQUISITION_RANGE = 10;
 	public static final float COMMON_UNIT_MAX_ATTACK_RANGE = 5;
 
 	public static final short FILTER_CATEGORIES = Constants.BOX2D_CATEGORY_UNITS;
@@ -47,7 +48,7 @@ public class Common {
 	 * @param y
 	 * @return
 	 */
-	public static Entity create(World ecs, float x, float y) {
+	public static Entity create(World ecs, PlayerManager playerManager, String player, float x, float y) {
 		final Entity e = ecs.createEntity();
 
 		ecs.getMapper(PositionComponent.class).create(e).position.set(x, y);
@@ -71,6 +72,8 @@ public class Common {
 
 		final BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
 		final MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
+
+		playerManager.setPlayer(e, player);
 
 		return e;
 	}

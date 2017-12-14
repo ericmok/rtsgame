@@ -3,6 +3,7 @@ package nyc.mok.game.units;
 
 import com.artemis.Entity;
 import com.artemis.World;
+import com.artemis.managers.PlayerManager;
 
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleBehaviorComponent;
@@ -20,9 +21,9 @@ public class Marine {
      *
      * TODO: Needs recycling.
      */
-    public static Entity create(World ecs, float x, float y) {
+    public static Entity create(World ecs, PlayerManager playerManager, String player, float x, float y) {
         //Entity e = Common.create(ecs, x, y, Common.createDynamicBodyDef(x, y), Common.createCircleFixtureDef(1));
-        Entity e = Common.create(ecs, x, y);
+        Entity e = Common.create(ecs, playerManager, player, x, y);
 
         ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.MARINE;
 
@@ -41,8 +42,8 @@ public class Marine {
         return e;
     }
 
-    public static Entity createTriangle(World ecs, float x, float y) {
-        Entity e = Common.create(ecs, x, y);
+    public static Entity createTriangle(World ecs, PlayerManager playerManager, String player, float x, float y) {
+        Entity e = Common.create(ecs, playerManager, player, x, y);
 
         ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.TRIANGLE;
 
@@ -58,8 +59,8 @@ public class Marine {
         return e;
     }
 
-    public static Entity createSquare(World ecs, float x, float y) {
-        Entity e = Common.create(ecs, x, y);
+    public static Entity createSquare(World ecs, PlayerManager playerManager, String player, float x, float y) {
+        Entity e = Common.create(ecs, playerManager, player, x, y);
 
         ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.SQUARE;
 
