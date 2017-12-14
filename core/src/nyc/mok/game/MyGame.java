@@ -72,7 +72,7 @@ public class MyGame implements Screen, InputProcessor {
 
     MyGame(Game game) {
         this.game = game;
-    }
+}
 
     public void create() {
         // This camera will get resized more appropriately later
@@ -103,14 +103,27 @@ public class MyGame implements Screen, InputProcessor {
         Gdx.input.setInputProcessor(new InputMultiplexer(setupStage(), this));
 
         BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(5, 20);
+        bodyDef.position.set(Constants.VIEWPORT_MIN_METERS, Constants.VIEWPORT_MIN_METERS);
         bodyDef.type = BodyDef.BodyType.StaticBody;
         Body body = box2dWorld.createBody(bodyDef);
+
         EdgeShape edgeShape = new EdgeShape();
-        edgeShape.set(-10, -10, 10, 10);
+
+        edgeShape.set(-Constants.VIEWPORT_MIN_METERS / 2, -Constants.VIEWPORT_MIN_METERS, -Constants.VIEWPORT_MIN_METERS / 2, Constants.VIEWPORT_MIN_METERS);
         Fixture fixture = body.createFixture(edgeShape, 1);
+
+        edgeShape.set(-Constants.VIEWPORT_MIN_METERS / 2, Constants.VIEWPORT_MIN_METERS, Constants.VIEWPORT_MIN_METERS / 2, Constants.VIEWPORT_MIN_METERS);
+        body.createFixture(edgeShape, 1);
+
+        edgeShape.set(Constants.VIEWPORT_MIN_METERS / 2, Constants.VIEWPORT_MIN_METERS, Constants.VIEWPORT_MIN_METERS / 2, -Constants.VIEWPORT_MIN_METERS);
+        body.createFixture(edgeShape, 1);
+
+        edgeShape.set(Constants.VIEWPORT_MIN_METERS / 2, -Constants.VIEWPORT_MIN_METERS, -Constants.VIEWPORT_MIN_METERS / 2, -Constants.VIEWPORT_MIN_METERS);
+        body.createFixture(edgeShape, 1);
+
         fixture.getFilterData().categoryBits = Constants.BOX2D_CATEGORY_ENV;
     }
+
 
     public Stage setupStage() {
 
@@ -166,6 +179,7 @@ public class MyGame implements Screen, InputProcessor {
         table.row();
 
         stage.addActor(table);
+
         return stage;
     }
 
@@ -209,6 +223,7 @@ public class MyGame implements Screen, InputProcessor {
     public void dispose() {
         batch.dispose();
         img.dispose();
+        stage.dispose();
     }
 
     @Override
@@ -230,6 +245,7 @@ public class MyGame implements Screen, InputProcessor {
         float scaledHeightInMeters = Constants.VIEWPORT_MIN_METERS;
 
         orthographicCamera.setToOrtho(false, scaledHeightInMeters * aspectRatio, scaledHeightInMeters);
+        stage.getViewport().update(width, height);
     }
 
     @Override
@@ -262,6 +278,9 @@ public class MyGame implements Screen, InputProcessor {
         return false;
     }
 
+    float prevX = 0;
+    float prevY = 0;
+
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
@@ -274,16 +293,30 @@ public class MyGame implements Screen, InputProcessor {
         } else if (unitMode == UnitMode.SQUARE) {
             Entity e = Marine.createSquare(ecs, touchPos.x, touchPos.y);
         }
+
+        prevX = touchPos.x;
+        prevY = touchPos.y;
+
         return false;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
+        prevX = touchPos.x;
+        prevY = touchPos.y;
         return false;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
+
+        float deltaX = touchPos.x - prevX;
+        float deltaY = touchPos.y - prevY;
+
+        orthographicCamera.translate(-deltaX, -deltaY);
+
         return false;
     }
 
