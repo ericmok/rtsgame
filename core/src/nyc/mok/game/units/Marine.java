@@ -7,7 +7,7 @@ import com.artemis.managers.PlayerManager;
 
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleBehaviorComponent;
-import nyc.mok.game.components.BattleUnitTypeComponent;
+import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.PhysicsBody;
 
 public class Marine {
@@ -25,7 +25,7 @@ public class Marine {
         //Entity e = Common.create(ecs, x, y, Common.createDynamicBodyDef(x, y), Common.createCircleFixtureDef(1));
         Entity e = Common.create(ecs, playerManager, player, x, y);
 
-        ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.MARINE;
+        ecs.getMapper(EntityType.class).get(e).type = EntityType.Type.MARINE;
 
         BattleAttackableComponent battleAttackable = ecs.getMapper(BattleAttackableComponent.class).get(e);
         battleAttackable.hp = HP;
@@ -45,7 +45,7 @@ public class Marine {
     public static Entity createTriangle(World ecs, PlayerManager playerManager, String player, float x, float y) {
         Entity e = Common.create(ecs, playerManager, player, x, y);
 
-        ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.TRIANGLE;
+        ecs.getMapper(EntityType.class).get(e).type = EntityType.Type.TRIANGLE;
 
         BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).get(e);
         battleBehaviorComponent.swingTime = SWING_TIME;
@@ -62,7 +62,7 @@ public class Marine {
     public static Entity createSquare(World ecs, PlayerManager playerManager, String player, float x, float y) {
         Entity e = Common.create(ecs, playerManager, player, x, y);
 
-        ecs.getMapper(BattleUnitTypeComponent.class).get(e).battleUnitType = BattleUnitTypeComponent.BattleUnitType.SQUARE;
+        ecs.getMapper(EntityType.class).get(e).type = EntityType.Type.SQUARE;
 
         BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).get(e);
         battleBehaviorComponent.swingTime = SWING_TIME;

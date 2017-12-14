@@ -13,7 +13,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import nyc.mok.game.Constants;
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleBehaviorComponent;
-import nyc.mok.game.components.BattleUnitTypeComponent;
+import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.MoveTargetsComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
@@ -65,7 +65,7 @@ public class Common {
 
 		final Targets targets = ecs.getMapper(Targets.class).create(e);
 
-		final BattleUnitTypeComponent battleUnitTypeComponent = ecs.getMapper(BattleUnitTypeComponent.class).create(e);
+		final EntityType entityType = ecs.getMapper(EntityType.class).create(e);
 		final BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).create(e);
 		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
 		battleBehaviorComponent.maxAttackRange = COMMON_UNIT_MAX_ATTACK_RANGE;
@@ -113,7 +113,7 @@ public class Common {
 		circle.setRadius(COMMON_UNIT_RADIUS);
 		FixtureDef fixtureDef = useTempFixtureDef();
 		fixtureDef.filter.categoryBits = Constants.BOX2D_CATEGORY_UNITS;
-		fixtureDef.filter.maskBits = (short)(Constants.BOX2D_CATEGORY_UNITS | Constants.BOX2D_CATEGORY_SENSORS);
+		fixtureDef.filter.maskBits = (short)(Constants.BOX2D_CATEGORY_UNITS | Constants.BOX2D_CATEGORY_SENSORS | Constants.BOX2D_CATEGORY_ENV);
 		fixtureDef.filter.groupIndex = 0;
 		fixtureDef.shape = circle;
 		fixtureDef.density = 1;

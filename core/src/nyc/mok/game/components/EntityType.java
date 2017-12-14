@@ -6,15 +6,16 @@ import com.artemis.Component;
  * Created by taco on 12/10/17.
  */
 
-public class BattleUnitTypeComponent extends Component {
-    public enum BattleUnitType {
+public class EntityType extends Component {
+    public enum Type {
         MARINE,
         MEDIC,
         TANK,
         CIRCLE,
         TRIANGLE,
-        SQUARE
+        SQUARE,
+        WALL
     }
-    public BattleUnitType battleUnitType = BattleUnitType.MARINE;
+    public Type type = Type.MARINE;
 
 }

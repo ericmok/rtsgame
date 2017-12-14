@@ -39,7 +39,7 @@ public class RTSGame extends com.badlogic.gdx.Game implements InputProcessor {
 //		BodyDef groundBodyDef = new BodyDef();
 //// Set its ecs position
 //		groundBodyDef.position.set(new Vector2(0, 0));
-//		//groundBodyDef.battleUnitType = BodyDef.BodyType.StaticBody;
+//		//groundBodyDef.type = BodyDef.BodyType.StaticBody;
 //
 //// Create a body from the defintion and add it to the ecs
 //		Body groundBody = box2dWorld.createBody(groundBodyDef);

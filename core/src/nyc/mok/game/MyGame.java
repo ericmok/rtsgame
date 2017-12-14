@@ -17,11 +17,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.EdgeShape;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -37,7 +33,9 @@ import nyc.mok.game.systems.PositionFromPhysicsSystem;
 import nyc.mok.game.systems.RenderBattleUnitSystem;
 import nyc.mok.game.systems.SpawningBattleUnitSystem;
 import nyc.mok.game.systems.TargetsSystem;
+import nyc.mok.game.systems.WallSystem;
 import nyc.mok.game.units.Marine;
+import nyc.mok.game.units.Wall;
 
 
 public class MyGame implements Screen, InputProcessor {
@@ -45,7 +43,6 @@ public class MyGame implements Screen, InputProcessor {
     com.badlogic.gdx.physics.box2d.World box2dWorld;
 
     private float accumulator = 0;
-    SpriteBatch batch;
     Texture img;
 
     OrthographicCamera orthographicCamera;
@@ -65,6 +62,8 @@ public class MyGame implements Screen, InputProcessor {
     private TextButton spawnTriangleButton;
     private TextButton spawnSquareButton;
 
+    private SpriteBatch ecsBatch;
+
     private enum UnitMode {
         MARINE,
         TRIANGLE,
@@ -78,13 +77,13 @@ public class MyGame implements Screen, InputProcessor {
 }
 
     public void create() {
+        ecsBatch = new SpriteBatch();
+
         // This camera will get resized more appropriately later
         orthographicCamera = new OrthographicCamera(800, 600);
 
-        batch = new SpriteBatch();
         img = new Texture(Gdx.files.internal("marine.png"));
 
-        SpriteBatch ecsBatch = new SpriteBatch();
         ecsBatch.setProjectionMatrix(orthographicCamera.combined);
 
         box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, 0f), true);
@@ -93,6 +92,7 @@ public class MyGame implements Screen, InputProcessor {
                 .dependsOn(EntityLinkManager.class)
                 .with(playerManager)
                 .with(new SpawningBattleUnitSystem(box2dWorld))
+                .with(new WallSystem(box2dWorld, ecsBatch, orthographicCamera))
                 .with(new PositionFromPhysicsSystem())
                 .with(new TargetsSystem(box2dWorld))
                 .with(new BattleUnitSystem(box2dWorld))
@@ -104,29 +104,8 @@ public class MyGame implements Screen, InputProcessor {
 
         debugRenderer = new Box2DDebugRenderer(true, true, false, true, true, true);
 
-        //Gdx.input.setInputProcessor(this);
-        Gdx.input.setInputProcessor(new InputMultiplexer(setupStage(), this));
-
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(Constants.VIEWPORT_MIN_METERS, Constants.VIEWPORT_MIN_METERS);
-        bodyDef.type = BodyDef.BodyType.StaticBody;
-        Body body = box2dWorld.createBody(bodyDef);
-
-        EdgeShape edgeShape = new EdgeShape();
-
-        edgeShape.set(-Constants.VIEWPORT_MIN_METERS / 2, -Constants.VIEWPORT_MIN_METERS, -Constants.VIEWPORT_MIN_METERS / 2, Constants.VIEWPORT_MIN_METERS);
-        Fixture fixture = body.createFixture(edgeShape, 1);
-
-        edgeShape.set(-Constants.VIEWPORT_MIN_METERS / 2, Constants.VIEWPORT_MIN_METERS, Constants.VIEWPORT_MIN_METERS / 2, Constants.VIEWPORT_MIN_METERS);
-        body.createFixture(edgeShape, 1);
-
-        edgeShape.set(Constants.VIEWPORT_MIN_METERS / 2, Constants.VIEWPORT_MIN_METERS, Constants.VIEWPORT_MIN_METERS / 2, -Constants.VIEWPORT_MIN_METERS);
-        body.createFixture(edgeShape, 1);
-
-        edgeShape.set(Constants.VIEWPORT_MIN_METERS / 2, -Constants.VIEWPORT_MIN_METERS, -Constants.VIEWPORT_MIN_METERS / 2, -Constants.VIEWPORT_MIN_METERS);
-        body.createFixture(edgeShape, 1);
-
-        fixture.getFilterData().categoryBits = Constants.BOX2D_CATEGORY_ENV;
+        setupStage();
+        Gdx.input.setInputProcessor(new InputMultiplexer(stage, this));
     }
 
 
@@ -185,6 +164,37 @@ public class MyGame implements Screen, InputProcessor {
 
         stage.addActor(table);
 
+        float mapWidth = Constants.MAP_WIDTH;
+        float mapHeight = Constants.MAP_HEIGHT;
+
+//
+//        BodyDef bodyDef = new BodyDef();
+//        bodyDef.position.set(Constants.VIEWPORT_MIN_METERS, Constants.VIEWPORT_MIN_METERS);
+//        bodyDef.type = BodyDef.BodyType.StaticBody;
+//        Body body = box2dWorld.createBody(bodyDef);
+//
+//        EdgeShape edgeShape = new EdgeShape();
+//
+//
+//        edgeShape.set(-mapWidth / 2, -mapWidth, -mapWidth / 2, mapWidth);
+//        Fixture fixture = body.createFixture(edgeShape, 1);
+//
+//        edgeShape.set(-mapWidth / 2, mapWidth, mapWidth / 2, mapWidth);
+//        body.createFixture(edgeShape, 1);
+//
+//        edgeShape.set(mapWidth / 2, mapWidth, mapWidth / 2, -mapWidth);
+//        body.createFixture(edgeShape, 1);
+//
+//        edgeShape.set(mapWidth / 2, -mapWidth, -mapWidth / 2, -mapWidth);
+//        body.createFixture(edgeShape, 1);
+//
+//        fixture.getFilterData().categoryBits = Constants.BOX2D_CATEGORY_ENV;
+
+        Wall.create(ecs, 0, -mapHeight, mapWidth, 1);
+        Wall.create(ecs, -mapWidth, 0, 1, mapHeight);
+        Wall.create(ecs, mapWidth, 1, 1, mapHeight);
+        Wall.create(ecs, 0, mapHeight, mapWidth, 1);
+
         return stage;
     }
 
@@ -194,20 +204,18 @@ public class MyGame implements Screen, InputProcessor {
         orthographicCamera.update();
         orthographicCamera.unproject(touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
+        ecsBatch.setProjectionMatrix(orthographicCamera.combined);
+        ecsBatch.begin();
+
         ecs.setDelta(delta);
         ecs.process();
+        ecsBatch.end();
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
 
+
         doPhysicsStep(delta);
-
-        batch.setProjectionMatrix(orthographicCamera.combined);
-
-//        batch.begin();
-//
-//        batch.draw(img, touchPos.x - img.getWidth() / 2, touchPos.y - img.getHeight() / 2);
-//        batch.end();
 
         debugRenderer.render(box2dWorld, orthographicCamera.combined);
     }
@@ -226,7 +234,7 @@ public class MyGame implements Screen, InputProcessor {
 
     @Override
     public void dispose() {
-        batch.dispose();
+        ecsBatch.dispose();
         img.dispose();
         stage.dispose();
     }

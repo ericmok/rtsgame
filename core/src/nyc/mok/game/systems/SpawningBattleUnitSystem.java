@@ -6,7 +6,7 @@ import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.physics.box2d.World;
 
-import nyc.mok.game.components.BattleUnitTypeComponent;
+import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.SpawnLifecycleComponent;
 import nyc.mok.game.units.Common;
@@ -18,11 +18,11 @@ public class SpawningBattleUnitSystem extends EntityProcessingSystem {
 	private World box2dWorld;
 
 	ComponentMapper<SpawnLifecycleComponent> spawnLifecycleMapper;
-	ComponentMapper<BattleUnitTypeComponent> battleUnitTypeMapper;
+	ComponentMapper<EntityType> entityTypeMapper;
 	ComponentMapper<PhysicsBody> physicsBodyMapper;
 
 	public SpawningBattleUnitSystem(World box2dWorld) {
-		super(Aspect.all(SpawnLifecycleComponent.class, BattleUnitTypeComponent.class, PhysicsBody.class));
+		super(Aspect.all(SpawnLifecycleComponent.class, EntityType.class, PhysicsBody.class));
 		this.box2dWorld = box2dWorld;
 	}
 
@@ -60,7 +60,10 @@ public class SpawningBattleUnitSystem extends EntityProcessingSystem {
 		if (physicsBody.body == null) {
 			// TODO: Can't decide where to create bodyDefs and fixtureDefs
 
-			switch (battleUnitTypeMapper.get(e).battleUnitType) {
+			switch (entityTypeMapper.get(e).type) {
+				case WALL:
+					// TODO: Place wall creation code here
+					break;
 				default:
 					physicsBody.body = Common.createBody(box2dWorld, spawnLifecycle.initX, spawnLifecycle.initY);
 					physicsBody.body.setUserData(e);

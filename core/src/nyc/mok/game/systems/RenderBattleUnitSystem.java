@@ -12,7 +12,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import nyc.mok.game.components.BattleBehaviorComponent;
-import nyc.mok.game.components.BattleUnitTypeComponent;
+import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.utils.ScaledSprite;
 
@@ -34,7 +34,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     Vector2 accTwo = new Vector2();
 
     public RenderBattleUnitSystem(SpriteBatch spriteBatch, OrthographicCamera orthographicCamera) {
-        super(Aspect.all(BattleUnitTypeComponent.class, BattleBehaviorComponent.class, PhysicsBody.class));
+        super(Aspect.all(EntityType.class, BattleBehaviorComponent.class, PhysicsBody.class));
         this.spriteBatch = spriteBatch;
         this.orthographicCamera = orthographicCamera;
     }
@@ -54,14 +54,11 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     @Override
     protected void begin() {
         super.begin();
-        spriteBatch.setProjectionMatrix(orthographicCamera.combined);
-        spriteBatch.begin();
     }
 
     @Override
     protected void end() {
         super.end();
-        spriteBatch.end();
     }
 
     private void drawSimpleBattleUnit(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent, Texture texture, float radius) {
@@ -113,10 +110,10 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     @Override
     protected void process(Entity e) {
         PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
-        BattleUnitTypeComponent battleUnitTypeComponent = getWorld().getMapper(BattleUnitTypeComponent.class).get(e);
+        EntityType entityType = getWorld().getMapper(EntityType.class).get(e);
         BattleBehaviorComponent battleBehaviorComponent = getWorld().getMapper(BattleBehaviorComponent.class).get(e);
 
-        switch (battleUnitTypeComponent.battleUnitType) {
+        switch (entityType.type) {
             case TRIANGLE:
                 drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, triangleTexture, 2f);
                 break;
