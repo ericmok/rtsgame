@@ -54,6 +54,6 @@ public class WallSystem extends EntityProcessingSystem {
 	protected void process(Entity e) {
 		WallComponent wallComponent = wallComponentComponentMapper.get(e);
 
-		sprite.scaledDraw(spriteBatch, wallComponent.centerX, wallComponent.centerY, wallComponent.width, wallComponent.height, 0);
+		sprite.scaledDraw(spriteBatch, wallComponent.centerX, wallComponent.centerY, wallComponent.width / 2, wallComponent.height / 2, 0);
 	}
 }

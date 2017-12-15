@@ -48,7 +48,7 @@ public class Wall {
 		Body body = box2dWorld.createBody(BODY_DEF);
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.filter.categoryBits = Constants.BOX2D_CATEGORY_ENV;
-		POLYGON_SHAPE_TO_REUSE.setAsBox(width, height, vectorToReuse.set(centerX, centerY), 0);
+		POLYGON_SHAPE_TO_REUSE.setAsBox(width/2, height/2, vectorToReuse.set(centerX, centerY), 0);
 		fixtureDef.shape = POLYGON_SHAPE_TO_REUSE;
 		body.createFixture(fixtureDef);
 

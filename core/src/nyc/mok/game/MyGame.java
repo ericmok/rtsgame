@@ -42,6 +42,10 @@ public class MyGame implements Screen, InputProcessor {
 	public World ecs;
 	com.badlogic.gdx.physics.box2d.World box2dWorld;
 
+	Vector2 cameraPositionOffset = new Vector2(0, 0);
+	float prevTouchX = 0;
+	float prevTouchY = 0;
+
 	private float accumulator = 0;
 	Texture img;
 
@@ -80,7 +84,7 @@ public class MyGame implements Screen, InputProcessor {
 		ecsBatch = new SpriteBatch();
 
 		// This camera will get resized more appropriately later
-		orthographicCamera = new OrthographicCamera(800, 600);
+		orthographicCamera = new OrthographicCamera(Gdx.graphics.getWidth() / Gdx.graphics.getHeight() * Constants.VIEWPORT_HEIGHT_METERS, Gdx.graphics.getHeight());
 
 		img = new Texture(Gdx.files.internal("marine.png"));
 
@@ -164,13 +168,32 @@ public class MyGame implements Screen, InputProcessor {
 
 		stage.addActor(table);
 
+		float xOffset = 0; //Constants.MAP_WIDTH / 2;
+		float yOffset = 0;
 		float mapWidth = Constants.MAP_WIDTH;
 		float mapHeight = Constants.MAP_HEIGHT;
+		float mapStrokeWidth = 1f;
 
-		Wall.create(ecs, 0, -mapHeight, mapWidth, 1);
-		Wall.create(ecs, -mapWidth, 0, 1, mapHeight);
-		Wall.create(ecs, mapWidth, 1, 1, mapHeight);
-		Wall.create(ecs, 0, mapHeight, mapWidth, 1);
+		Wall.create(ecs, 0, -mapHeight/2, mapWidth, mapStrokeWidth);
+		Wall.create(ecs, 0, mapHeight/2, mapWidth, mapStrokeWidth);
+		Wall.create(ecs, -(mapWidth/2), 0, mapStrokeWidth, mapHeight);
+		Wall.create(ecs, (mapWidth/2), 0, mapStrokeWidth, mapHeight);
+
+//		Wall.create(ecs, 0 + xOffset, -mapHeight + yOffset, mapWidth, mapStrokeWidth);
+//		Wall.create(ecs, -mapWidth + xOffset, 0 + yOffset, mapStrokeWidth, mapHeight);
+//		Wall.create(ecs, mapWidth + xOffset, 0 + yOffset, mapStrokeWidth, mapHeight);
+//		Wall.create(ecs, 0 + xOffset, mapHeight + yOffset, mapWidth, mapStrokeWidth);
+//
+		// This creates the walls centered around camera position...
+//		float aspectRatio = (float)Gdx.graphics.getWidth() / Gdx.graphics.getHeight();
+//		float viewportWidth = aspectRatio * Constants.VIEWPORT_HEIGHT_METERS;
+//		float viewportHeight = Constants.VIEWPORT_HEIGHT_METERS;
+//
+//		Wall.create(ecs, viewportWidth / 2, 0, mapWidth, mapStrokeWidth);
+//		Wall.create(ecs, viewportWidth / 2, mapHeight, mapWidth, mapStrokeWidth);
+//		Wall.create(ecs, (viewportWidth / 2) - (mapWidth / 2), mapHeight / 2, mapStrokeWidth, mapHeight);
+//		Wall.create(ecs, (viewportWidth / 2) + (mapWidth / 2), mapHeight / 2, mapStrokeWidth, mapHeight);
+
 
 		return stage;
 	}
@@ -178,6 +201,7 @@ public class MyGame implements Screen, InputProcessor {
 	public void step(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 		orthographicCamera.update();
 		orthographicCamera.unproject(touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
@@ -232,9 +256,12 @@ public class MyGame implements Screen, InputProcessor {
 	@Override
 	public void resize(int width, int height) {
 		float aspectRatio = (float)width / height;
-		float scaledHeightInMeters = Constants.VIEWPORT_MIN_METERS;
+		float scaledHeightInMeters = Constants.VIEWPORT_HEIGHT_METERS;
+		float scaledWidth = aspectRatio * scaledHeightInMeters;
 
-		orthographicCamera.setToOrtho(false, scaledHeightInMeters * aspectRatio, scaledHeightInMeters);
+		orthographicCamera.setToOrtho(false, scaledWidth, scaledHeightInMeters);
+		cameraPositionOffset.set(-scaledWidth / 2, -scaledHeightInMeters / 2);
+		orthographicCamera.translate(cameraPositionOffset);
 		stage.getViewport().update(width, height);
 	}
 
@@ -268,9 +295,6 @@ public class MyGame implements Screen, InputProcessor {
 		return false;
 	}
 
-	float prevX = 0;
-	float prevY = 0;
-
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
@@ -284,8 +308,8 @@ public class MyGame implements Screen, InputProcessor {
 			Entity e = Marine.createSquare(ecs, playerManager, "square", touchPos.x, touchPos.y);
 		}
 
-		prevX = touchPos.x;
-		prevY = touchPos.y;
+		prevTouchX = touchPos.x;
+		prevTouchY = touchPos.y;
 
 		return false;
 	}
@@ -293,8 +317,10 @@ public class MyGame implements Screen, InputProcessor {
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
-		prevX = touchPos.x;
-		prevY = touchPos.y;
+
+		prevTouchX = touchPos.x;
+		prevTouchY = touchPos.y;
+
 		return false;
 	}
 
@@ -302,9 +328,10 @@ public class MyGame implements Screen, InputProcessor {
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
 
-		float deltaX = touchPos.x - prevX;
-		float deltaY = touchPos.y - prevY;
+		float deltaX = touchPos.x - prevTouchX;
+		float deltaY = touchPos.y - prevTouchY;
 
+		cameraPositionOffset.set(cameraPositionOffset.x - deltaX, cameraPositionOffset.y - deltaY);
 		orthographicCamera.translate(-deltaX, -deltaY);
 
 		return false;
