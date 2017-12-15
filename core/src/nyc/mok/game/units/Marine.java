@@ -36,7 +36,7 @@ public class Marine {
         battleBehaviorComponent.cooldownTime = COOLDOWN_TIME;
         battleBehaviorComponent.attackType = BattleBehaviorComponent.AttackType.ROCK;
 
-        PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).get(e);
+        PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).create(e);
         //physicsBody.initCircleBodyDefFixtureDef(x, y, 1);
 
         return e;
