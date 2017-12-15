@@ -64,16 +64,21 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     private void drawSimpleBattleUnit(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent, Texture texture, float radius) {
         //float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
 
-        scaledSprite.setTexture(texture);
+//        scaledSprite.setTexture(texture);
 //        scaledSprite.scaledDraw(spriteBatch,
 //                physicsBody.body.getPosition().x, physicsBody.body.getPosition().y,
+//                radius, radius,
 //                MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90);
-        scaledSprite.scaledDraw(spriteBatch,
-                physicsBody.body.getPosition().x, physicsBody.body.getPosition().y,
+        spriteBatch.draw(texture,
+                physicsBody.body.getPosition().x - radius,
+                physicsBody.body.getPosition().y - radius,
                 radius, radius,
-                MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90);
-                //physicsBody.body.getLinearVelocity().angle() - 90);
-
+                2 * radius, 2 * radius,
+                1, 1,
+                MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90,
+                0, 0,
+                texture.getWidth(), texture.getHeight(),
+                false, false);
 
         drawSimpleAttack(battleBehaviorComponent, physicsBody);
     }
@@ -101,9 +106,19 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
                     physicsBody.body.getPosition().y
             );
 
-            scaledSprite.scaledDraw(spriteBatch,
-                    accOne.x, accOne.y, 0.5f, 0.5f,
-                    direction.angle() - 90);
+            spriteBatch.draw(texture,
+                    accOne.x - 0.5f,
+                    accOne.y - 0.5f,
+                    0.5f, 0.5f,
+                    1, 1,
+                    1, 1,
+                    direction.angle(),
+                    0, 0,
+                    texture.getWidth(), texture.getHeight(),
+                    false, false);
+//            scaledSprite.scaledDraw(spriteBatch,
+//                    accOne.x, accOne.y, 0.5f, 0.5f,
+//                    direction.angle() - 90);
         }
     }
 
@@ -115,7 +130,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
 
         switch (entityType.type) {
             case TRIANGLE:
-                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, triangleTexture, 2f);
+                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, triangleTexture, 1f);
                 break;
             case SQUARE:
                 drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, squareTexture, 1f);

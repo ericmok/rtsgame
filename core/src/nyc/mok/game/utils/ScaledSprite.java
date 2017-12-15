@@ -6,6 +6,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import nyc.mok.game.Constants;
 
+/**
+ * Avoid using this in favor of SpriteBatch#draw.
+ * The scaledDraw methods requires pixel to meters conversion whereas SpriteBatch#draw is Pixel to Meters agnostic.
+ */
 public class ScaledSprite extends Sprite {
 
 	public ScaledSprite() {

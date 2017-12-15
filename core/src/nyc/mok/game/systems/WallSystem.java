@@ -26,6 +26,8 @@ public class WallSystem extends EntityProcessingSystem {
 	private ScaledSprite sprite = new ScaledSprite();
 	private OrthographicCamera orthographicCamera;
 
+	private Texture wallTexture;
+
 	ComponentMapper<WallComponent> wallComponentComponentMapper;
 	ComponentMapper<PhysicsBody> physicsBodyComponentMapper;
 
@@ -38,7 +40,7 @@ public class WallSystem extends EntityProcessingSystem {
 
 	@Override
 	protected void begin() {
-		Texture wallTexture = new Texture(Gdx.files.internal("square.png"));
+		wallTexture = new Texture(Gdx.files.internal("square.png"));
 		sprite.setTexture(wallTexture);
 	}
 
@@ -54,6 +56,14 @@ public class WallSystem extends EntityProcessingSystem {
 	protected void process(Entity e) {
 		WallComponent wallComponent = wallComponentComponentMapper.get(e);
 
-		sprite.scaledDraw(spriteBatch, wallComponent.centerX, wallComponent.centerY, wallComponent.width / 2, wallComponent.height / 2, 0);
+		//sprite.scaledDraw(spriteBatch, wallComponent.centerX, wallComponent.centerY, wallComponent.width / 2, wallComponent.height / 2, 0);
+		spriteBatch.draw(wallTexture,
+				wallComponent.centerX - wallComponent.width/2,
+				wallComponent.centerY - wallComponent.height/2,
+				wallComponent.width,
+				wallComponent.height,
+				0, 0,
+				wallTexture.getWidth(), wallTexture.getHeight(),
+				false, false);
 	}
 }
