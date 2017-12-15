@@ -23,7 +23,6 @@ import nyc.mok.game.utils.ScaledSprite;
 public class WallSystem extends EntityProcessingSystem {
 	private World box2dWorld;
 	private SpriteBatch spriteBatch;
-	private ScaledSprite sprite = new ScaledSprite();
 	private OrthographicCamera orthographicCamera;
 
 	private Texture wallTexture;
@@ -41,7 +40,6 @@ public class WallSystem extends EntityProcessingSystem {
 	@Override
 	protected void begin() {
 		wallTexture = new Texture(Gdx.files.internal("square.png"));
-		sprite.setTexture(wallTexture);
 	}
 
 	@Override

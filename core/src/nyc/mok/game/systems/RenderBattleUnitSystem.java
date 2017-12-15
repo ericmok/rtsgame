@@ -28,7 +28,6 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     Texture simple_attack;
     OrthographicCamera orthographicCamera;
     Sprite sprite;
-    ScaledSprite scaledSprite;
 
     Vector2 accOne = new Vector2();
     Vector2 accTwo = new Vector2();
@@ -48,7 +47,6 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
         squareTexture = new Texture(Gdx.files.internal("square.png"));
         simple_attack = new Texture(Gdx.files.internal("simple_attack.png"));
         sprite = new Sprite(texture);
-        scaledSprite = new ScaledSprite(texture);
     }
 
     @Override
@@ -84,7 +82,6 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
     }
 
     private void drawSimpleAttack(BattleBehaviorComponent battleBehaviorComponent, PhysicsBody physicsBody) {
-        scaledSprite.setTexture(simple_attack);
 
         // Not sure if we need to check target again, swinging necessarily implies target...
         if (battleBehaviorComponent.target != -1 && battleBehaviorComponent.battleState == BattleBehaviorComponent.BattleState.SWINGING) {
