@@ -8,7 +8,6 @@ import com.artemis.managers.PlayerManager;
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.EntityType;
-import nyc.mok.game.components.PhysicsBody;
 
 public class Marine {
 
@@ -35,9 +34,6 @@ public class Marine {
         battleBehaviorComponent.swingTime = SWING_TIME;
         battleBehaviorComponent.cooldownTime = COOLDOWN_TIME;
         battleBehaviorComponent.attackType = BattleBehaviorComponent.AttackType.ROCK;
-
-        PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).create(e);
-        //physicsBody.initCircleBodyDefFixtureDef(x, y, 1);
 
         return e;
     }
