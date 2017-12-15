@@ -108,9 +108,6 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		BattleBehaviorComponent battleBehaviorComponent = battleBehaviorComponentMapper.get(e);
 		Targets targets = targetsComponentMapper.get(e);
 
-		// TODO: Handle field forces
-		physicsBody.body.setLinearVelocity(0,0);
-
 		// World query method
 //		if (getTargetUsingWorldQuery(physicsBody, battleBehaviorComponent) != -1) {
 //			return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;

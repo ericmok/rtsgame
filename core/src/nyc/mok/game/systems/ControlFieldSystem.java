@@ -204,23 +204,6 @@ public class ControlFieldSystem extends EntityProcessingSystem {
 
 	@Override
 	protected void process(Entity e) {
-		ControlNode controlNode = controlNodeMapper.get(e);
-		PhysicsBody physicsBody = physicsBodyMapper.get(e);
 
-		// Move physics body towards control
-		if (controlNode.fields.size() > 0) {
-			ControlField controlField = getWorld().getMapper(ControlField.class).get(controlNode.fields.get(0));
-
-//			accOne.set(
-//					(controlField.body.getPosition().x - physicsBody.body.getPosition().x),
-//					(controlField.body.getPosition().y - physicsBody.body.getPosition().y)
-//			);
-
-			accOne.setAngle(controlField.body.getAngle() * MathUtils.radDeg);
-			accOne.add(physicsBody.body.getPosition().x, physicsBody.body.getPosition().y);
-
-
-			physicsBody.body.applyLinearImpulse(accOne.x, accOne.y, 0, 0, true);
-		}
 	}
 }
