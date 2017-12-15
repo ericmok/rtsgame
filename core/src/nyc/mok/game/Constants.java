@@ -19,4 +19,5 @@ public class Constants {
 	public static short BOX2D_CATEGORY_UNITS = 0x1 << 1; // Skipping 1 for debugging
 	public static short BOX2D_CATEGORY_ENV = 0x1 << 2;
 	public static short BOX2D_CATEGORY_SENSORS = 0x1 << 3;
+	public static short BOX2D_CATEGORY_FIELDS = 0x1 << 4;
 }

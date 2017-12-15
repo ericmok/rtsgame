@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import nyc.mok.game.Constants;
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleBehaviorComponent;
+import nyc.mok.game.components.ControlNode;
 import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.MoveTargetsComponent;
 import nyc.mok.game.components.PhysicsBody;
@@ -73,6 +74,8 @@ public class Common {
 		final BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
 		final MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
 
+		final ControlNode controlNode = ecs.getMapper(ControlNode.class).create(e);
+
 		playerManager.setPlayer(e, player);
 
 		return e;
@@ -113,7 +116,7 @@ public class Common {
 		circle.setRadius(COMMON_UNIT_RADIUS);
 		FixtureDef fixtureDef = useTempFixtureDef();
 		fixtureDef.filter.categoryBits = Constants.BOX2D_CATEGORY_UNITS;
-		fixtureDef.filter.maskBits = (short)(Constants.BOX2D_CATEGORY_UNITS | Constants.BOX2D_CATEGORY_SENSORS | Constants.BOX2D_CATEGORY_ENV);
+		fixtureDef.filter.maskBits = (short)(Constants.BOX2D_CATEGORY_UNITS | Constants.BOX2D_CATEGORY_SENSORS | Constants.BOX2D_CATEGORY_ENV | Constants.BOX2D_CATEGORY_FIELDS);
 		fixtureDef.filter.groupIndex = 0;
 		fixtureDef.shape = circle;
 		fixtureDef.density = 1;

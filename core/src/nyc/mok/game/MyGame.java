@@ -28,12 +28,15 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import nyc.mok.game.systems.BattleUnitSystem;
+import nyc.mok.game.systems.Box2dSystem;
+import nyc.mok.game.systems.ControlFieldSystem;
 import nyc.mok.game.systems.MovementSystem;
 import nyc.mok.game.systems.PositionFromPhysicsSystem;
 import nyc.mok.game.systems.RenderBattleUnitSystem;
 import nyc.mok.game.systems.SpawningBattleUnitSystem;
 import nyc.mok.game.systems.TargetsSystem;
 import nyc.mok.game.systems.WallSystem;
+import nyc.mok.game.units.Field;
 import nyc.mok.game.units.Marine;
 import nyc.mok.game.units.Wall;
 
@@ -47,7 +50,8 @@ public class MyGame implements Screen, InputProcessor {
 	float prevTouchY = 0;
 
 	private float accumulator = 0;
-	Texture img;
+	private SpriteBatch spriteBatch;
+	Texture fieldControlTexture;
 
 	OrthographicCamera orthographicCamera;
 
@@ -59,19 +63,24 @@ public class MyGame implements Screen, InputProcessor {
 
 	Game game;
 
+	Vector2 lastTouchDown = new Vector2(0, 0);
+	Vector2 fieldDirection = new Vector2(1, 0);
+
 	private Stage stage;
 	private Skin skin;
 	private Table table;
 	private TextButton spawnMarineButton;
 	private TextButton spawnTriangleButton;
 	private TextButton spawnSquareButton;
+	private TextButton fieldButton;
 
 	private SpriteBatch ecsBatch;
 
 	private enum UnitMode {
 		MARINE,
 		TRIANGLE,
-		SQUARE
+		SQUARE,
+		FIELD
 	}
 	private UnitMode unitMode = UnitMode.MARINE;
 	public PlayerManager playerManager = new PlayerManager();
@@ -82,11 +91,12 @@ public class MyGame implements Screen, InputProcessor {
 
 	public void create() {
 		ecsBatch = new SpriteBatch();
+		spriteBatch = new SpriteBatch();
 
 		// This camera will get resized more appropriately later
 		orthographicCamera = new OrthographicCamera(Gdx.graphics.getWidth() / Gdx.graphics.getHeight() * Constants.VIEWPORT_HEIGHT_METERS, Gdx.graphics.getHeight());
 
-		img = new Texture(Gdx.files.internal("marine.png"));
+		fieldControlTexture = new Texture(Gdx.files.internal("field-control.png"));
 
 		ecsBatch.setProjectionMatrix(orthographicCamera.combined);
 
@@ -95,11 +105,13 @@ public class MyGame implements Screen, InputProcessor {
 		WorldConfiguration config = new WorldConfigurationBuilder()
 				.dependsOn(EntityLinkManager.class)
 				.with(playerManager)
+				.with(new Box2dSystem(box2dWorld))
 				.with(new SpawningBattleUnitSystem(box2dWorld))
 				.with(new WallSystem(box2dWorld, ecsBatch, orthographicCamera))
 				.with(new PositionFromPhysicsSystem())
 				.with(new TargetsSystem(box2dWorld))
 				.with(new BattleUnitSystem(box2dWorld))
+				.with(new ControlFieldSystem(box2dWorld))
 				.with(new MovementSystem())
 				.with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))
 				.build();
@@ -166,6 +178,17 @@ public class MyGame implements Screen, InputProcessor {
 		table.add(spawnSquareButton).width(400).height(200);
 		table.row();
 
+		fieldButton = new TextButton("FIELD", skin);
+		fieldButton.setSize(400, 300);
+		fieldButton.addListener(new ClickListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				unitMode = UnitMode.FIELD;
+				return super.touchDown(event, x, y, pointer, button);
+			}
+		});
+		table.add(fieldButton).width(400).height(200);
+
 		stage.addActor(table);
 
 		float xOffset = 0; //Constants.MAP_WIDTH / 2;
@@ -215,8 +238,21 @@ public class MyGame implements Screen, InputProcessor {
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
 
-
 		doPhysicsStep(delta);
+
+		if (unitMode == UnitMode.FIELD && Gdx.input.isTouched()) {
+			spriteBatch.setProjectionMatrix(orthographicCamera.combined);
+			spriteBatch.begin();
+
+			float fieldRadius = 10;
+
+			spriteBatch.draw(fieldControlTexture, lastTouchDown.x - fieldRadius / 2, lastTouchDown.y - fieldRadius / 2,
+					fieldRadius / 2, fieldRadius / 2, fieldRadius, fieldRadius, 1, 1,
+					fieldDirection.angle() - 90,
+					0, 0, fieldControlTexture.getWidth(), fieldControlTexture.getHeight(),
+					false, false);
+			spriteBatch.end();
+		}
 
 		debugRenderer.render(box2dWorld, orthographicCamera.combined);
 	}
@@ -236,7 +272,7 @@ public class MyGame implements Screen, InputProcessor {
 	@Override
 	public void dispose() {
 		ecsBatch.dispose();
-		img.dispose();
+		fieldControlTexture.dispose();
 		stage.dispose();
 	}
 
@@ -299,6 +335,8 @@ public class MyGame implements Screen, InputProcessor {
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		orthographicCamera.unproject(touchPos.set(screenX, screenY, 0));
 
+		lastTouchDown.set(touchPos.x, touchPos.y);
+
 		if (unitMode == UnitMode.MARINE) {
 			// TODO: Test concurrency with ecs in game loop
 			Entity e = Marine.create(ecs, playerManager, "marine", touchPos.x, touchPos.y);
@@ -321,6 +359,9 @@ public class MyGame implements Screen, InputProcessor {
 		prevTouchX = touchPos.x;
 		prevTouchY = touchPos.y;
 
+		if (unitMode == UnitMode.FIELD) {
+			Entity e = Field.create(ecs, playerManager, "marine", lastTouchDown.x, lastTouchDown.y, fieldDirection.angle());
+		}
 		return false;
 	}
 
@@ -332,8 +373,13 @@ public class MyGame implements Screen, InputProcessor {
 		float deltaY = touchPos.y - prevTouchY;
 
 		cameraPositionOffset.set(cameraPositionOffset.x - deltaX, cameraPositionOffset.y - deltaY);
-		orthographicCamera.translate(-deltaX, -deltaY);
+		// Uncomment this for map scroll
+		//orthographicCamera.translate(-deltaX, -deltaY);
 
+		if (unitMode == UnitMode.FIELD) {
+			fieldDirection.set(deltaX, deltaY);
+			fieldDirection.nor();
+		}
 		return false;
 	}
 

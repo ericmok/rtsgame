@@ -26,7 +26,8 @@ import nyc.mok.game.utils.SortUtils;
  */
 
 public class TargetsSystem extends EntityProcessingSystem {
-	private World box2dWorld;
+	//private World box2dWorld;
+	private Box2dSystem box2dSystem;
 
 	private ComponentMapper<Targets> targetsComponentMapper;
 	private ComponentMapper<PhysicsBody> physicsBodyMapper;
@@ -42,7 +43,7 @@ public class TargetsSystem extends EntityProcessingSystem {
 
 	public TargetsSystem(World box2dWorld) {
 		super(Aspect.all(Targets.class, PhysicsBody.class, BattleBehaviorComponent.class, BattleAttackableComponent.class));
-		this.box2dWorld = box2dWorld;
+		//this.box2dWorld = box2dWorld;
 	}
 
 
@@ -65,7 +66,7 @@ public class TargetsSystem extends EntityProcessingSystem {
 //		});
 
 		// This listener gets called at the END of the ECS step. Refer to the containing game loop for possible changes
-		box2dWorld.setContactListener(new ContactListener() {
+		box2dSystem.addBox2dContactListener(new ContactListener() {
 			@Override
 			public void beginContact(Contact contact) {
 				Gdx.app.log("Contact", "contact");
