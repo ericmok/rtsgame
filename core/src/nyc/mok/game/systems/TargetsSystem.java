@@ -45,8 +45,9 @@ public class TargetsSystem extends EntityProcessingSystem {
 		this.box2dWorld = box2dWorld;
 	}
 
+
 	@Override
-	protected void begin() {
+	protected void initialize() {
 		entitySubscription = getWorld().getAspectSubscriptionManager().get(Aspect.all(BattleAttackableComponent.class));
 
 		// This approach doesn't solve the fact we have to go through each battle unit to update their targets

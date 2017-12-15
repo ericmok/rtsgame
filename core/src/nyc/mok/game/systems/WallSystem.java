@@ -14,7 +14,6 @@ import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.WallComponent;
 import nyc.mok.game.units.Wall;
-import nyc.mok.game.utils.ScaledSprite;
 
 /**
  * Created by taco on 12/14/17.
@@ -38,7 +37,7 @@ public class WallSystem extends EntityProcessingSystem {
 	}
 
 	@Override
-	protected void begin() {
+	protected void initialize() {
 		wallTexture = new Texture(Gdx.files.internal("square.png"));
 	}
 
