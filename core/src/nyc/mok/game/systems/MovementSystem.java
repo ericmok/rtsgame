@@ -23,9 +23,11 @@ public class MovementSystem extends EntityProcessingSystem {
 	private ComponentMapper<BattleBehaviorComponent> battleBehaviorMapper;
 	private ComponentMapper<MoveTargetsComponent> moveTargetsMapper;
 	private ComponentMapper<ControlNode> controlNodeMapper;
+	private ComponentMapper<ControlField> controlFieldMapper;
 
 	Vector2 acc = new Vector2();
 	Vector2 accTwo = new Vector2();
+	Vector2 accThree = new Vector2();
 
 	public MovementSystem() {
 		super(Aspect.all(PhysicsBody.class, BattleBehaviorComponent.class, MoveTargetsComponent.class, ControlNode.class));
@@ -88,6 +90,30 @@ public class MovementSystem extends EntityProcessingSystem {
 		}
 	}
 
+	/**
+	 *
+	 * @param body
+	 * @param positionToMoveTowards
+	 * @param fractionOfSpeedPerTimeStepToGetToMaxSpeed
+	 * @param maxSpeed
+	 * @param approachDistance If set equal to stop distance, approach won't get slowed
+	 * @param stopDistance
+	 */
+	public void calculateAndSetAcceleration(Body body, Vector2 positionToMoveTowards, float fractionOfSpeedPerTimeStepToGetToMaxSpeed, float maxSpeed, float approachDistance, float stopDistance) {
+
+		acc.set(positionToMoveTowards.x - body.getPosition().x,
+				positionToMoveTowards.y - body.getPosition().y);
+
+		accTwo.set(acc);
+
+		float dst = positionToMoveTowards.dst(body.getPosition());
+
+		//accTwo.nor().scl(maxSpeed).add(-body.getLinearVelocity().x, -body.getLinearVelocity().y).scl(fractionOfSpeedPerTimeStepToGetToMaxSpeed);
+		accTwo.nor().scl(maxSpeed * 10);
+		body.applyForce(accTwo, body.getWorldCenter(), true);
+		body.getLinearVelocity().clamp(0, maxSpeed);
+	}
+
 	public void calculateAndSetRotation(Body body, Vector2 targetDirection, float torqueFactor) {
 		body.setAngularVelocity(0);
 
@@ -141,15 +167,55 @@ public class MovementSystem extends EntityProcessingSystem {
 			calculateAndSetRotation(physicsBody.body, targetPhysicsBody.body.getPosition(), moveTargets.torqueFactor);
 
 		} else if (controlNode.fields.size() > 0) {
-			ControlField controlField = getWorld().getMapper(ControlField.class).get(controlNode.fields.get(0));
+			Vector2 summation = accTwo;
 
-			acc.setAngle(controlField.body.getAngle() * MathUtils.radDeg);
-			acc.scl(maxSpeed);
-			accTwo.add(acc.x + physicsBody.body.getPosition().x, acc.y + physicsBody.body.getPosition().y);
+			summation.setZero();
 
-			//physicsBody.body.applyLinearImpulse(acc.x, acc.y, 0, 0, true);
-			calculateAndSetVelocity(physicsBody.body, accTwo, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
-			calculateAndSetRotation(physicsBody.body, accTwo, moveTargets.torqueFactor);
+			for (int i = 0; i< controlNode.fields.size(); i++) {
+				acc.set(Vector2.X);
+
+				ControlField controlField = controlFieldMapper.get(controlNode.fields.get(i));
+
+				acc.setAngleRad(controlField.body.getAngle());
+				//acc.add(physicsBody.body.getPosition().x, physicsBody.body.getPosition().y);
+
+				//physicsBody.body.applyLinearImpulse(acc.x, acc.y, 0, 0, true);
+				//calculateAndSetVelocity(physicsBody.body, accTwo, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
+				//calculateAndSetRotation(physicsBody.body, accTwo, moveTargets.torqueFactor);
+				float dst = accThree.set(
+						controlField.body.getPosition().x - physicsBody.body.getPosition().x,
+						controlField.body.getPosition().y - physicsBody.body.getPosition().y
+				).dst(Vector2.Zero);
+
+				//acc.add(physicsBody.body.getPosition());
+				summation.add(acc.scl(1 + dst));
+			}
+
+//			Vector2 pos = acc.set(physicsBody.body.getPosition());
+//			Vector2 direction = accTwo;
+//			direction.set(1, 0);
+//			direction.setAngleRad(sumAngle);
+//			direction.nor();
+//			direction.scl(maxSpeed);
+//			direction.add(pos);
+
+			//summation.add(physicsBody.body.getPosition());
+//			ControlField controlField = getWorld().getMapper(ControlField.class).get(controlNode.fields.get(0));
+//
+//			acc.setAngle(controlField.body.getAngle() * MathUtils.radDeg);
+//			acc.scl(maxSpeed);
+//			accTwo.add(acc.x + physicsBody.body.getPosition().x, acc.y + physicsBody.body.getPosition().y);
+//
+//			//physicsBody.body.applyLinearImpulse(acc.x, acc.y, 0, 0, true);
+//			calculateAndSetVelocity(physicsBody.body, accTwo, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
+//			calculateAndSetRotation(physicsBody.body, accTwo, moveTargets.torqueFactor);
+			summation.nor();
+			summation.scl(maxSpeed);
+			summation.add(physicsBody.body.getPosition());
+
+			//calculateAndSetVelocity(physicsBody.body, summation, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
+			calculateAndSetAcceleration(physicsBody.body, summation, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
+			calculateAndSetRotation(physicsBody.body, summation, moveTargets.torqueFactor);
 		} else {
 			physicsBody.body.setLinearDamping(1f / moveTargets.rampUpToMaxSpeedTimeFactor);
 			physicsBody.body.setAngularVelocity(0);
