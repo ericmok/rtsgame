@@ -202,22 +202,6 @@ public class MyGame implements Screen, InputProcessor {
 		Wall.create(ecs, -(mapWidth/2), 0, mapStrokeWidth, mapHeight);
 		Wall.create(ecs, (mapWidth/2), 0, mapStrokeWidth, mapHeight);
 
-//		Wall.create(ecs, 0 + xOffset, -mapHeight + yOffset, mapWidth, mapStrokeWidth);
-//		Wall.create(ecs, -mapWidth + xOffset, 0 + yOffset, mapStrokeWidth, mapHeight);
-//		Wall.create(ecs, mapWidth + xOffset, 0 + yOffset, mapStrokeWidth, mapHeight);
-//		Wall.create(ecs, 0 + xOffset, mapHeight + yOffset, mapWidth, mapStrokeWidth);
-//
-		// This creates the walls centered around camera position...
-//		float aspectRatio = (float)Gdx.graphics.getWidth() / Gdx.graphics.getHeight();
-//		float viewportWidth = aspectRatio * Constants.VIEWPORT_HEIGHT_METERS;
-//		float viewportHeight = Constants.VIEWPORT_HEIGHT_METERS;
-//
-//		Wall.create(ecs, viewportWidth / 2, 0, mapWidth, mapStrokeWidth);
-//		Wall.create(ecs, viewportWidth / 2, mapHeight, mapWidth, mapStrokeWidth);
-//		Wall.create(ecs, (viewportWidth / 2) - (mapWidth / 2), mapHeight / 2, mapStrokeWidth, mapHeight);
-//		Wall.create(ecs, (viewportWidth / 2) + (mapWidth / 2), mapHeight / 2, mapStrokeWidth, mapHeight);
-
-
 		return stage;
 	}
 
