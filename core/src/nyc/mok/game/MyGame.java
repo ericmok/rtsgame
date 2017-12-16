@@ -130,7 +130,7 @@ public class MyGame implements Screen, InputProcessor {
 		skin = new Skin(Gdx.files.internal("uiskin.json"));
 		stage = new Stage(new ScreenViewport());
 
-		skin.getFont("default-font").getData().setScale(4);
+		skin.getFont("default-font").getData().setScale(3);
 
 		table = new Table();
 		table.setWidth(stage.getWidth());
@@ -143,7 +143,7 @@ public class MyGame implements Screen, InputProcessor {
 		table.row();
 
 		spawnMarineButton = new TextButton("MARINE", skin);
-		spawnMarineButton.setSize(400, 300);
+		//spawnMarineButton.setSize(400, 300);
 		spawnMarineButton.addListener(new ClickListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -151,11 +151,11 @@ public class MyGame implements Screen, InputProcessor {
 				return super.touchDown(event, x, y, pointer, button);
 			}
 		});
-		table.add(spawnMarineButton).width(400).height(200).padBottom(50);
+		table.add(spawnMarineButton).width(250).height(120).padBottom(50);
 		table.row();
 
 		spawnTriangleButton = new TextButton("TRIANGLE", skin);
-		spawnTriangleButton.setSize(400, 300);
+		//spawnTriangleButton.setSize(400, 300);
 		spawnTriangleButton.addListener(new ClickListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -163,11 +163,11 @@ public class MyGame implements Screen, InputProcessor {
 				return super.touchDown(event, x, y, pointer, button);
 			}
 		});
-		table.add(spawnTriangleButton).width(400).height(200).padBottom(50);
+		table.add(spawnTriangleButton).width(250).height(120).padBottom(50);
 		table.row();
 
 		spawnSquareButton = new TextButton("SQUARE", skin);
-		spawnSquareButton.setSize(400, 300);
+		//spawnSquareButton.setSize(400, 300);
 		spawnSquareButton.addListener(new ClickListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -175,11 +175,11 @@ public class MyGame implements Screen, InputProcessor {
 				return super.touchDown(event, x, y, pointer, button);
 			}
 		});
-		table.add(spawnSquareButton).width(400).height(200);
+		table.add(spawnSquareButton).width(250).height(120).padBottom(50);
 		table.row();
 
 		fieldButton = new TextButton("FIELD", skin);
-		fieldButton.setSize(400, 300);
+		//fieldButton.setSize(400, 300);
 		fieldButton.addListener(new ClickListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -187,7 +187,7 @@ public class MyGame implements Screen, InputProcessor {
 				return super.touchDown(event, x, y, pointer, button);
 			}
 		});
-		table.add(fieldButton).width(400).height(200);
+		table.add(fieldButton).width(250).height(120);
 
 		stage.addActor(table);
 
