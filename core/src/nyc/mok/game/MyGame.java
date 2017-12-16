@@ -280,8 +280,7 @@ public class MyGame implements Screen, InputProcessor {
 		float scaledWidth = aspectRatio * scaledHeightInMeters;
 
 		orthographicCamera.setToOrtho(false, scaledWidth, scaledHeightInMeters);
-		cameraPositionOffset.set(-scaledWidth / 2, -scaledHeightInMeters / 2);
-		orthographicCamera.translate(cameraPositionOffset);
+		orthographicCamera.position.set(Vector3.Zero);
 		stage.getViewport().update(width, height);
 	}
 
