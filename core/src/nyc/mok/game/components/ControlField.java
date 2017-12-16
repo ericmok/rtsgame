@@ -12,4 +12,7 @@ public class ControlField extends Component {
 	public Vector2 initPos = new Vector2();
 	public float initAngle = 0;
 	public Body body;
+
+	public float timeToLive = 2f;
+	public float timeAlive = 0;
 }

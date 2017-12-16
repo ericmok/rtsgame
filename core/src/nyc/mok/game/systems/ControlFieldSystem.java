@@ -1,11 +1,11 @@
 package nyc.mok.game.systems;
 
 import com.artemis.Aspect;
+import com.artemis.BaseEntitySystem;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.EntitySubscription;
 import com.artemis.managers.PlayerManager;
-import com.artemis.systems.EntityProcessingSystem;
 import com.artemis.utils.IntBag;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
@@ -33,15 +33,16 @@ import nyc.mok.game.systems.utils.BodyCaster;
  * Created by taco on 12/14/17.
  */
 
-public class ControlFieldSystem extends EntityProcessingSystem {
+public class ControlFieldSystem extends BaseEntitySystem {
 	//private World box2dWorld;
 
 	private Box2dSystem box2dSystem;
 
 	private ComponentMapper<PhysicsBody> physicsBodyMapper;
 	private ComponentMapper<ControlNode> controlNodeMapper;
+	private ComponentMapper<ControlField> controlFieldMapper;
 
-	private EntitySubscription entitySubscription;
+	private EntitySubscription controlFieldEntitySubscription;
 
 	private PlayerManager playerManager;
 
@@ -122,9 +123,9 @@ public class ControlFieldSystem extends EntityProcessingSystem {
 
 	@Override
 	protected void initialize() {
-		entitySubscription = getWorld().getAspectSubscriptionManager().get(Aspect.all(ControlField.class));
+		controlFieldEntitySubscription = getWorld().getAspectSubscriptionManager().get(Aspect.all(ControlField.class));
 
-		entitySubscription.addSubscriptionListener(new EntitySubscription.SubscriptionListener() {
+		controlFieldEntitySubscription.addSubscriptionListener(new EntitySubscription.SubscriptionListener() {
 			@Override
 			public void inserted(IntBag entities) {
 				for (int i = 0; i < entities.size(); i++) {
@@ -196,12 +197,34 @@ public class ControlFieldSystem extends EntityProcessingSystem {
 	}
 
 	@Override
-	public void inserted(Entity e) {
+	protected void processSystem() {
+		IntBag fields = controlFieldEntitySubscription.getEntities();
 
+		for (int i = 0; i < fields.size(); i++) {
+			int ei = fields.get(i);
+			Entity entity = getWorld().getEntity(ei);
+			ControlField controlField = controlFieldMapper.get(ei);
+			processControlField(entity, controlField);
+		}
+
+		IntBag entitiesToBeControlled = getEntityIds();
+		for (int i = 0; i < entitiesToBeControlled.size(); i++) {
+			int ei = entitiesToBeControlled.get(i);
+			Entity entity = getWorld().getEntity(ei);
+			PhysicsBody physicsBody = physicsBodyMapper.get(ei);
+			ControlNode controlNode = controlNodeMapper.get(ei);
+			processControlNode(ei, physicsBody, controlNode);
+		}
 	}
 
-	@Override
-	protected void process(Entity e) {
+	protected void processControlField(Entity e, ControlField controlField) {
+		controlField.timeAlive += Gdx.graphics.getDeltaTime();
+		if (controlField.timeAlive >= controlField.timeToLive) {
+			getWorld().deleteEntity(e);
+		}
+	}
+
+	protected void processControlNode(int e, PhysicsBody physicsBody, ControlNode controlNode) {
 
 	}
 }
