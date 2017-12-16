@@ -1,5 +1,7 @@
 package nyc.mok.game.units;
 
+import com.artemis.Archetype;
+import com.artemis.ArchetypeBuilder;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.PlayerManager;
@@ -29,7 +31,7 @@ public class Common {
 
 	public static final float COMMON_UNIT_RADIUS = 1;
 	public static final float COMMON_UNIT_TARGET_ACQUISITION_RANGE = 10;
-	public static final float COMMON_UNIT_MAX_ATTACK_RANGE = 5;
+	public static final float COMMON_UNIT_MAX_ATTACK_RANGE = 6;
 
 	public static final short FILTER_CATEGORIES = Constants.BOX2D_CATEGORY_UNITS;
 
@@ -41,6 +43,20 @@ public class Common {
 	private static CircleShape tempCircleShape = new CircleShape();
 	private static PolygonShape polygonShape = new PolygonShape();
 
+	private static ArchetypeBuilder archetypeBuilder = new ArchetypeBuilder()
+			.add(PositionComponent.class)
+			.add(PhysicsBody.class)
+			.add(SpawnLifecycleComponent.class)
+			.add(EntityType.class)
+			.add(Targets.class)
+			.add(BattleBehaviorComponent.class)
+			.add(BattleAttackableComponent.class)
+			.add(MoveTargetsComponent.class)
+			.add(ControlNode.class);
+
+	private static Archetype archetype = null;
+	private static World prevWorld = null;
+
 	/**
 	 * Creates an entity with components to make this a battle unit.
 	 *
@@ -50,35 +66,52 @@ public class Common {
 	 * @return
 	 */
 	public static Entity create(World ecs, PlayerManager playerManager, String player, float x, float y) {
-		final Entity e = ecs.createEntity();
+//		final Entity e = ecs.createEntity();
+//
+//		ecs.getMapper(PositionComponent.class).create(e).position.set(x, y);
+//		final PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).create(e);
+//
+//		// These would be replaced by spawning system
+//		//	physicsBody.bodyDef = bodyDef;
+//		//	physicsBody.fixtureDef = fixtureDef;
+//
+//		final SpawnLifecycleComponent spawnLifecycleComponent = ecs.getMapper(SpawnLifecycleComponent.class).create(e);
+//		spawnLifecycleComponent.lifeCycle = SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW;
+//		spawnLifecycleComponent.initX = x;
+//		spawnLifecycleComponent.initY = y;
+//
+//		final Targets targets = ecs.getMapper(Targets.class).create(e);
+//
+//		final EntityType entityType = ecs.getMapper(EntityType.class).create(e);
+//		final BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).create(e);
+//		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
+//		battleBehaviorComponent.maxAttackRange = COMMON_UNIT_MAX_ATTACK_RANGE;
+//
+//		final BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
+//		final MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
+//
+//		final ControlNode controlNode = ecs.getMapper(ControlNode.class).create(e);
 
-		ecs.getMapper(PositionComponent.class).create(e).position.set(x, y);
-		final PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).create(e);
+		if (archetype == null || prevWorld != ecs) {
+			archetype = archetypeBuilder.build(ecs);
+			prevWorld = ecs;
+		}
 
-		// These would be replaced by spawning system
-		//	physicsBody.bodyDef = bodyDef;
-		//	physicsBody.fixtureDef = fixtureDef;
+		int e = ecs.create(archetype);
+		Entity entity = ecs.getEntity(e);
 
-		final SpawnLifecycleComponent spawnLifecycleComponent = ecs.getMapper(SpawnLifecycleComponent.class).create(e);
-		spawnLifecycleComponent.lifeCycle = SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW;
+		SpawnLifecycleComponent spawnLifecycleComponent = ecs.getMapper(SpawnLifecycleComponent.class).get(entity);
 		spawnLifecycleComponent.initX = x;
 		spawnLifecycleComponent.initY = y;
 
-		final Targets targets = ecs.getMapper(Targets.class).create(e);
+		BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).get(entity);
+//		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
+//		battleBehaviorComponent.maxAttackRange = COMMON_UNIT_MAX_ATTACK_RANGE;
+//		battleBehaviorComponent.rangeToBeginAttacking = COMMON_UNIT_MAX_ATTACK_RANGE - 2;
 
-		final EntityType entityType = ecs.getMapper(EntityType.class).create(e);
-		final BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).create(e);
-		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
-		battleBehaviorComponent.maxAttackRange = COMMON_UNIT_MAX_ATTACK_RANGE;
+		playerManager.setPlayer(entity, player);
 
-		final BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
-		final MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
-
-		final ControlNode controlNode = ecs.getMapper(ControlNode.class).create(e);
-
-		playerManager.setPlayer(e, player);
-
-		return e;
+		return entity;
 	}
 
 	public static BodyDef createDynamicBodyDef(float x, float y) {
