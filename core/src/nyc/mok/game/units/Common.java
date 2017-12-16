@@ -66,32 +66,6 @@ public class Common {
 	 * @return
 	 */
 	public static Entity create(World ecs, PlayerManager playerManager, String player, float x, float y) {
-//		final Entity e = ecs.createEntity();
-//
-//		ecs.getMapper(PositionComponent.class).create(e).position.set(x, y);
-//		final PhysicsBody physicsBody = ecs.getMapper(PhysicsBody.class).create(e);
-//
-//		// These would be replaced by spawning system
-//		//	physicsBody.bodyDef = bodyDef;
-//		//	physicsBody.fixtureDef = fixtureDef;
-//
-//		final SpawnLifecycleComponent spawnLifecycleComponent = ecs.getMapper(SpawnLifecycleComponent.class).create(e);
-//		spawnLifecycleComponent.lifeCycle = SpawnLifecycleComponent.LifeCycle.SPAWNING_RAW;
-//		spawnLifecycleComponent.initX = x;
-//		spawnLifecycleComponent.initY = y;
-//
-//		final Targets targets = ecs.getMapper(Targets.class).create(e);
-//
-//		final EntityType entityType = ecs.getMapper(EntityType.class).create(e);
-//		final BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).create(e);
-//		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
-//		battleBehaviorComponent.maxAttackRange = COMMON_UNIT_MAX_ATTACK_RANGE;
-//
-//		final BattleAttackableComponent battleAttackableComponent = ecs.getMapper(BattleAttackableComponent.class).create(e);
-//		final MoveTargetsComponent moveTargetsComponent = ecs.getMapper(MoveTargetsComponent.class).create(e);
-//
-//		final ControlNode controlNode = ecs.getMapper(ControlNode.class).create(e);
-
 		if (archetype == null || prevWorld != ecs) {
 			archetype = archetypeBuilder.build(ecs);
 			prevWorld = ecs;
@@ -105,9 +79,9 @@ public class Common {
 		spawnLifecycleComponent.initY = y;
 
 		BattleBehaviorComponent battleBehaviorComponent = ecs.getMapper(BattleBehaviorComponent.class).get(entity);
-//		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
-//		battleBehaviorComponent.maxAttackRange = COMMON_UNIT_MAX_ATTACK_RANGE;
-//		battleBehaviorComponent.rangeToBeginAttacking = COMMON_UNIT_MAX_ATTACK_RANGE - 2;
+		battleBehaviorComponent.targetAcquisitionRange = COMMON_UNIT_TARGET_ACQUISITION_RANGE;
+		battleBehaviorComponent.maxAttackRange = COMMON_UNIT_MAX_ATTACK_RANGE;
+		battleBehaviorComponent.rangeToBeginAttacking = COMMON_UNIT_MAX_ATTACK_RANGE - 2;
 
 		playerManager.setPlayer(entity, player);
 
