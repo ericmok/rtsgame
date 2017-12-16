@@ -158,6 +158,8 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
 		PhysicsBody targetPhysicsBody = physicsBodyComponentMapper.get(battleBehaviorComponent.target);
 
+		moveTargetsMapper.get(e).entityToMoveTowards = battleBehaviorComponent.target;
+
 		// TODO: rangeToBeginAttacking is target for movement, but its never reached...
 		if (physicsBody.body.getPosition().dst(targetPhysicsBody.body.getPosition()) <= (battleBehaviorComponent.maxAttackRange) ) {
 			battleBehaviorComponent.battleProgress = 0;
@@ -166,8 +168,6 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 			return BattleBehaviorComponent.BattleState.SWINGING;
 		}
-
-		moveTargetsMapper.get(e).entityToMoveTowards = battleBehaviorComponent.target;
 
 		return BattleBehaviorComponent.BattleState.MOVING_TOWARDS_TARGET;
 	}
