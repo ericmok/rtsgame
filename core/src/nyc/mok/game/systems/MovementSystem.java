@@ -143,7 +143,7 @@ public class MovementSystem extends EntityProcessingSystem {
 		float maxSpeed = moveTargetsMapper.get(e).maxSpeed;
 
 
-			if (moveTargets.entityToMoveTowards != -1 && controlNode.fields.size() == 0) {
+		if (moveTargets.entityToMoveTowards != -1 && controlNode.fields.size() == 0) {
 			PhysicsBody targetPhysicsBody = physicsBodyMapper.get(moveTargets.entityToMoveTowards);
 
 			calculateAndSetVelocity(physicsBody.body, targetPhysicsBody.body.getPosition(), moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, battleBehavior.maxAttackRange, battleBehavior.rangeToBeginAttacking);
