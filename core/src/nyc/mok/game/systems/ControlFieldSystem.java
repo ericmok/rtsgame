@@ -59,7 +59,6 @@ public class ControlFieldSystem extends EntityProcessingSystem {
 	}
 
 	public void processBeginContact(Fixture fixture, Fixture otherFixture) {
-		Gdx.app.log("Begin", "Begin Contact");
 
 		if (fixture.getBody() == otherFixture.getBody()) return;
 
@@ -87,7 +86,6 @@ public class ControlFieldSystem extends EntityProcessingSystem {
 	}
 
 	public void processEndContact(Fixture fixture, Fixture otherFixture) {
-		Gdx.app.log("Begin", "End Contact");
 
 		if (fixture.getBody() == otherFixture.getBody()) return;
 
