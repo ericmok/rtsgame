@@ -78,10 +78,13 @@ public class ControlFieldSystem extends BaseEntitySystem {
 
 			if (controlNode != null) {
 
-				// Demo: move units towards the field
-				//controlNode.positionToMoveTowards.set(controlField.body.getPosition());
-				//controlNode.isActive = true;
-				controlNode.fields.add(supposedControlFieldEntity.getId());
+				if (playerManager.getPlayer(supposedControlFieldEntity).equals(
+						playerManager.getPlayer(supposedControlNodeEntity))) {
+					// Demo: move units towards the field
+					//controlNode.positionToMoveTowards.set(controlField.body.getPosition());
+					//controlNode.isActive = true;
+					controlNode.fields.add(supposedControlFieldEntity.getId());
+				}
 			}
 		}
 	}
