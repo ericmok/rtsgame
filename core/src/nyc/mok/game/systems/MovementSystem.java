@@ -44,22 +44,10 @@ public class MovementSystem extends EntityProcessingSystem {
 	 */
 	public void calculateAndSetVelocity(Body body, Vector2 positionToMoveTowards, float fractionOfSpeedPerTimeStepToGetToMaxSpeed, float maxSpeed, float approachDistance, float stopDistance) {
 
-		// Move towards target
-		//		physicsBody.body.setLinearVelocity(targetPhysicsBody.body.getPosition().x - physicsBody.body.getPosition().x,
-		//				targetPhysicsBody.body.getPosition().y - physicsBody.body.getPosition().y);
-		//
-		//		physicsBody.body.getLinearVelocity().nor().scl(moveTargetsMapper.get(e).maxSpeed);
-
 		acc.set(positionToMoveTowards.x - body.getPosition().x,
 				positionToMoveTowards.y - body.getPosition().y);
 
 		accTwo.set(acc);
-//
-//			acc.nor().scl(maxSpeed / 4);
-//
-//			body.applyLinearImpulse(acc.x, acc.y,
-//					body.getPosition().x,
-//					body.getPosition().y, true);
 
 		float dst = positionToMoveTowards.dst(body.getPosition());
 
@@ -108,7 +96,6 @@ public class MovementSystem extends EntityProcessingSystem {
 
 		float dst = positionToMoveTowards.dst(body.getPosition());
 
-		//accTwo.nor().scl(maxSpeed).add(-body.getLinearVelocity().x, -body.getLinearVelocity().y).scl(fractionOfSpeedPerTimeStepToGetToMaxSpeed);
 		accTwo.nor().scl(maxSpeed * 10);
 		body.applyForce(accTwo, body.getWorldCenter(), true);
 		body.getLinearVelocity().clamp(0, maxSpeed);
@@ -177,38 +164,15 @@ public class MovementSystem extends EntityProcessingSystem {
 				ControlField controlField = controlFieldMapper.get(controlNode.fields.get(i));
 
 				acc.setAngleRad(controlField.body.getAngle());
-				//acc.add(physicsBody.body.getPosition().x, physicsBody.body.getPosition().y);
 
-				//physicsBody.body.applyLinearImpulse(acc.x, acc.y, 0, 0, true);
-				//calculateAndSetVelocity(physicsBody.body, accTwo, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
-				//calculateAndSetRotation(physicsBody.body, accTwo, moveTargets.torqueFactor);
 				float dst = accThree.set(
 						controlField.body.getPosition().x - physicsBody.body.getPosition().x,
 						controlField.body.getPosition().y - physicsBody.body.getPosition().y
 				).dst(Vector2.Zero);
 
-				//acc.add(physicsBody.body.getPosition());
 				summation.add(acc.scl(1 + dst));
 			}
 
-//			Vector2 pos = acc.set(physicsBody.body.getPosition());
-//			Vector2 direction = accTwo;
-//			direction.set(1, 0);
-//			direction.setAngleRad(sumAngle);
-//			direction.nor();
-//			direction.scl(maxSpeed);
-//			direction.add(pos);
-
-			//summation.add(physicsBody.body.getPosition());
-//			ControlField controlField = getWorld().getMapper(ControlField.class).get(controlNode.fields.get(0));
-//
-//			acc.setAngle(controlField.body.getAngle() * MathUtils.radDeg);
-//			acc.scl(maxSpeed);
-//			accTwo.add(acc.x + physicsBody.body.getPosition().x, acc.y + physicsBody.body.getPosition().y);
-//
-//			//physicsBody.body.applyLinearImpulse(acc.x, acc.y, 0, 0, true);
-//			calculateAndSetVelocity(physicsBody.body, accTwo, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
-//			calculateAndSetRotation(physicsBody.body, accTwo, moveTargets.torqueFactor);
 			summation.nor();
 			summation.scl(maxSpeed);
 			summation.add(physicsBody.body.getPosition());
