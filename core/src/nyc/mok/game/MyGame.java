@@ -107,7 +107,7 @@ public class MyGame implements Screen, InputProcessor {
 				.with(playerManager)
 				.with(new Box2dSystem(box2dWorld))
 				.with(new SpawningBattleUnitSystem(box2dWorld))
-				.with(new WallSystem(box2dWorld, ecsBatch, orthographicCamera))
+				.with(new WallSystem(box2dWorld, ecsBatch))
 				.with(new PositionFromPhysicsSystem())
 				.with(new TargetsSystem(box2dWorld))
 				.with(new BattleUnitSystem(box2dWorld))
