@@ -102,21 +102,27 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
                     targetPhysicsBody.body.getPosition().y -
                             physicsBody.body.getPosition().y
             );
-            
+
             Vector2 direction = accTwo.set(accOne);
+            direction.nor();
 
             // Projectile "illusion" as a function of swingTime
             // Note: If you add a random component to the projectile, it looks like spears stabbing!
-            accOne.scl(battleBehaviorComponent.battleProgress / battleBehaviorComponent.swingTime).add(
-                    physicsBody.body.getPosition().x,
-                    physicsBody.body.getPosition().y
-            );
+            float illusoryProjectileLength = 0.7f;
+            float offsetFromAttacker = 1f - illusoryProjectileLength;
+            float size = 0.7f;
+
+            accOne.scl(illusoryProjectileLength * battleBehaviorComponent.battleProgress / battleBehaviorComponent.swingTime)
+                .add(
+                    physicsBody.body.getPosition().x + offsetFromAttacker * direction.x,
+                    physicsBody.body.getPosition().y + offsetFromAttacker * direction.y
+                );
 
             spriteBatch.draw(simple_attack,
-                    accOne.x - 0.5f,
-                    accOne.y - 0.5f,
-                    0.5f, 0.5f,
-                    1, 1,
+                    accOne.x - size / 2,
+                    accOne.y - size / 2,
+                    size / 2, size / 2,
+                    size, size,
                     1, 1,
                     direction.angle() - 90,
                     0, 0,
