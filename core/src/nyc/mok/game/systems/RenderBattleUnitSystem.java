@@ -2,8 +2,10 @@ package nyc.mok.game.systems;
 
 import com.artemis.Aspect;
 import com.artemis.Entity;
+import com.artemis.managers.PlayerManager;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -11,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import nyc.mok.game.Constants;
 import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.PhysicsBody;
@@ -20,6 +23,9 @@ import nyc.mok.game.components.PhysicsBody;
  */
 
 public class RenderBattleUnitSystem extends EntityProcessingSystem {
+
+    private PlayerManager playerManager;
+
     SpriteBatch spriteBatch;
     Texture texture;
     Texture triangleTexture;
@@ -58,7 +64,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
         super.end();
     }
 
-    private void drawSimpleBattleUnit(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent, Texture texture, float radius) {
+    private void drawSimpleBattleUnit(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent, String player, Texture texture, float radius) {
         //float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
 
 //        scaledSprite.setTexture(texture);
@@ -66,6 +72,8 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
 //                physicsBody.body.getPosition().x, physicsBody.body.getPosition().y,
 //                radius, radius,
 //                MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90);
+        spriteBatch.setColor(Constants.getColorForPlayer(player));
+
         spriteBatch.draw(texture,
                 physicsBody.body.getPosition().x - radius,
                 physicsBody.body.getPosition().y - radius,
@@ -76,6 +84,8 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
                 0, 0,
                 texture.getWidth(), texture.getHeight(),
                 false, false);
+
+        spriteBatch.setColor(Color.WHITE);
 
         drawSimpleAttack(battleBehaviorComponent, physicsBody);
     }
@@ -92,7 +102,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
                     targetPhysicsBody.body.getPosition().y -
                             physicsBody.body.getPosition().y
             );
-
+            
             Vector2 direction = accTwo.set(accOne);
 
             // Projectile "illusion" as a function of swingTime
@@ -102,13 +112,13 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
                     physicsBody.body.getPosition().y
             );
 
-            spriteBatch.draw(texture,
+            spriteBatch.draw(simple_attack,
                     accOne.x - 0.5f,
                     accOne.y - 0.5f,
                     0.5f, 0.5f,
                     1, 1,
                     1, 1,
-                    direction.angle(),
+                    direction.angle() - 90,
                     0, 0,
                     texture.getWidth(), texture.getHeight(),
                     false, false);
@@ -125,16 +135,17 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
         PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
         EntityType entityType = getWorld().getMapper(EntityType.class).get(e);
         BattleBehaviorComponent battleBehaviorComponent = getWorld().getMapper(BattleBehaviorComponent.class).get(e);
+        String player = playerManager.getPlayer(e);
 
         switch (entityType.type) {
             case TRIANGLE:
-                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, triangleTexture, 1f);
+                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, triangleTexture, 1f);
                 break;
             case SQUARE:
-                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, squareTexture, 1f);
+                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, squareTexture, 1f);
                 break;
             default:
-                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, texture, 1f);
+                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, texture, 1f);
                 break;
         }
 

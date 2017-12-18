@@ -28,7 +28,6 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import nyc.mok.game.systems.BattleUnitSystem;
-import nyc.mok.game.systems.Box2dDebugRendererSystem;
 import nyc.mok.game.systems.Box2dSystem;
 import nyc.mok.game.systems.ControlFieldSystem;
 import nyc.mok.game.systems.MovementSystem;
@@ -115,7 +114,7 @@ public class MyGame implements Screen, InputProcessor {
 				.with(new ControlFieldSystem())
 				.with(new MovementSystem())
 				.with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))
-				.with(new Box2dDebugRendererSystem(orthographicCamera))
+				//.with(new Box2dDebugRendererSystem(orthographicCamera))
 				.build();
 
 		ecs = new World(config);
@@ -314,11 +313,11 @@ public class MyGame implements Screen, InputProcessor {
 
 		if (unitMode == UnitMode.MARINE) {
 			// TODO: Test concurrency with ecs in game loop
-			Entity e = Marine.create(ecs, playerManager, "marine", touchPos.x, touchPos.y);
+			Entity e = Marine.create(ecs, playerManager, Constants.PLAYER_ONE, touchPos.x, touchPos.y);
 		} else if (unitMode == UnitMode.TRIANGLE) {
-			Entity e = Marine.createTriangle(ecs, playerManager, "triangle", touchPos.x, touchPos.y);
+			Entity e = Marine.createTriangle(ecs, playerManager,  Constants.PLAYER_TWO, touchPos.x, touchPos.y);
 		} else if (unitMode == UnitMode.SQUARE) {
-			Entity e = Marine.createSquare(ecs, playerManager, "square", touchPos.x, touchPos.y);
+			Entity e = Marine.createSquare(ecs, playerManager, Constants.PLAYER_THREE, touchPos.x, touchPos.y);
 		}
 
 		prevTouchX = touchPos.x;
@@ -335,7 +334,7 @@ public class MyGame implements Screen, InputProcessor {
 		prevTouchY = touchPos.y;
 
 		if (unitMode == UnitMode.FIELD) {
-			Entity e = Field.create(ecs, playerManager, "marine", lastTouchDown.x, lastTouchDown.y, fieldDirection.angle());
+			Entity e = Field.create(ecs, playerManager, Constants.PLAYER_ONE, lastTouchDown.x, lastTouchDown.y, fieldDirection.angle());
 		}
 		return false;
 	}
