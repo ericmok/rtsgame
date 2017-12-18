@@ -20,7 +20,6 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.QueryCallback;
-import com.badlogic.gdx.physics.box2d.World;
 
 import nyc.mok.game.Constants;
 import nyc.mok.game.components.BattleBehaviorComponent;
@@ -54,9 +53,8 @@ public class ControlFieldSystem extends BaseEntitySystem {
 
 	private Vector2 accOne = new Vector2();
 
-	public ControlFieldSystem(World box2dWorld) {
+	public ControlFieldSystem() {
 		super(Aspect.all(PhysicsBody.class, ControlNode.class));
-		//this.box2dWorld = box2dWorld;
 	}
 
 	public void processBeginContact(Fixture fixture, Fixture otherFixture) {

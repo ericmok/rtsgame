@@ -14,7 +14,6 @@ import com.badlogic.gdx.math.Vector2;
 import nyc.mok.game.components.BattleBehaviorComponent;
 import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.PhysicsBody;
-import nyc.mok.game.utils.ScaledSprite;
 
 /**
  * Created by taco on 12/9/17.
@@ -121,6 +120,8 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
 
     @Override
     protected void process(Entity e) {
+        spriteBatch.begin();
+
         PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
         EntityType entityType = getWorld().getMapper(EntityType.class).get(e);
         BattleBehaviorComponent battleBehaviorComponent = getWorld().getMapper(BattleBehaviorComponent.class).get(e);
@@ -136,5 +137,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
                 drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, texture, 1f);
                 break;
         }
+
+        spriteBatch.end();
     }
 }

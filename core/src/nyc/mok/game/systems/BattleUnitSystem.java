@@ -7,7 +7,6 @@ import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.World;
 
 import java.util.ArrayList;
 
@@ -27,7 +26,8 @@ import nyc.mok.game.utils.Box2dQueries;
  */
 
 public class BattleUnitSystem extends EntityProcessingSystem {
-	private World box2dWorld;
+	//private World box2dWorld;
+	private Box2dSystem box2dSystem;
 
 	// These are injected
 	private ComponentMapper<PositionComponent> positionComponentComponentMapper;
@@ -40,7 +40,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	private Vector2 acc = new Vector2();
 
-	public BattleUnitSystem(World box2dWorld) {
+	public BattleUnitSystem() {
 		super(Aspect.all(
 				PositionComponent.class,
 				SpawnLifecycleComponent.class,
@@ -50,7 +50,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 				MoveTargetsComponent.class,
 				PhysicsBody.class));
 
-		this.box2dWorld = box2dWorld;
+		//this.box2dWorld = box2dWorld;
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	 */
 	public int getTargetUsingWorldQuery(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent) {
 		// TODO: FILTER FOR PHYSICS BODIES THAT HAVE THE RIGHT COMPONENTS
-		ArrayList<Fixture> fixtures = 	Box2dQueries.instance(box2dWorld).closest(Constants.BOX2D_CATEGORY_UNITS, Constants.BOX2D_CATEGORY_UNITS, (short)0).queryRangeForBody(physicsBody.body, battleBehaviorComponent.targetAcquisitionRange).finishReport();
+		ArrayList<Fixture> fixtures = 	Box2dQueries.instance(box2dSystem.getBox2dWorld()).closest(Constants.BOX2D_CATEGORY_UNITS, Constants.BOX2D_CATEGORY_UNITS, (short)0).queryRangeForBody(physicsBody.body, battleBehaviorComponent.targetAcquisitionRange).finishReport();
 
 		boolean fixtureForBattleUnitFound = false;
 		if (fixtures.size() > 0) {

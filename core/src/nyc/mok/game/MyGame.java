@@ -28,6 +28,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import nyc.mok.game.systems.BattleUnitSystem;
+import nyc.mok.game.systems.Box2dDebugRendererSystem;
 import nyc.mok.game.systems.Box2dSystem;
 import nyc.mok.game.systems.ControlFieldSystem;
 import nyc.mok.game.systems.MovementSystem;
@@ -43,7 +44,7 @@ import nyc.mok.game.units.Wall;
 
 public class MyGame implements Screen, InputProcessor {
 	public World ecs;
-	com.badlogic.gdx.physics.box2d.World box2dWorld;
+	//com.badlogic.gdx.physics.box2d.World box2dWorld;
 
 	Vector2 cameraPositionOffset = new Vector2(0, 0);
 	float prevTouchX = 0;
@@ -100,20 +101,21 @@ public class MyGame implements Screen, InputProcessor {
 
 		ecsBatch.setProjectionMatrix(orthographicCamera.combined);
 
-		box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, 0f), true);
+		//box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, 0f), true);
 
 		WorldConfiguration config = new WorldConfigurationBuilder()
 				.dependsOn(EntityLinkManager.class)
 				.with(playerManager)
-				.with(new Box2dSystem(box2dWorld))
-				.with(new SpawningBattleUnitSystem(box2dWorld))
-				.with(new WallSystem(box2dWorld, ecsBatch))
+				.with(new Box2dSystem())
+				.with(new SpawningBattleUnitSystem())
+				.with(new WallSystem(ecsBatch))
 				.with(new PositionFromPhysicsSystem())
-				.with(new TargetsSystem(box2dWorld))
-				.with(new BattleUnitSystem(box2dWorld))
-				.with(new ControlFieldSystem(box2dWorld))
+				.with(new TargetsSystem())
+				.with(new BattleUnitSystem())
+				.with(new ControlFieldSystem())
 				.with(new MovementSystem())
 				.with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))
+				.with(new Box2dDebugRendererSystem(orthographicCamera))
 				.build();
 
 		ecs = new World(config);
@@ -213,16 +215,17 @@ public class MyGame implements Screen, InputProcessor {
 		orthographicCamera.unproject(touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
 		ecsBatch.setProjectionMatrix(orthographicCamera.combined);
-		ecsBatch.begin();
+		//ecsBatch.begin();
 
 		ecs.setDelta(delta);
 		ecs.process();
-		ecsBatch.end();
+
+		//ecsBatch.end();
 
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
-
-		doPhysicsStep(delta);
+//
+//		doPhysicsStep(delta);
 
 		if (unitMode == UnitMode.FIELD && Gdx.input.isTouched()) {
 			spriteBatch.setProjectionMatrix(orthographicCamera.combined);
@@ -238,19 +241,8 @@ public class MyGame implements Screen, InputProcessor {
 			spriteBatch.end();
 		}
 
-		debugRenderer.render(box2dWorld, orthographicCamera.combined);
-	}
-
-	private void doPhysicsStep(float deltaTime) {
-		// fixed time step
-		// max frame time to avoid spiral of death (on slow devices)
-		float frameTime = Math.min(deltaTime, 0.25f);
-		accumulator += frameTime;
-		while (accumulator >= 1f/60) {
-			accumulator -= 1f/60;
-
-			box2dWorld.step(1f/60, 6, 2);
-		}
+		// Can't call within SpriteBatch begin and ends...probably shader issue
+		//debugRenderer.render(ecs.getSystem(Box2dSystem.class).getBox2dWorld(), orthographicCamera.combined);
 	}
 
 	@Override

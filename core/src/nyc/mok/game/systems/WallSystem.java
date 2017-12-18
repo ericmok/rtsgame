@@ -7,7 +7,6 @@ import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.physics.box2d.World;
 
 import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.PhysicsBody;
@@ -19,7 +18,8 @@ import nyc.mok.game.units.Wall;
  */
 
 public class WallSystem extends EntityProcessingSystem {
-	private World box2dWorld;
+	//private World box2dWorld;
+	private Box2dSystem box2dSystem;
 	private SpriteBatch spriteBatch;
 
 	private Texture wallTexture;
@@ -27,9 +27,9 @@ public class WallSystem extends EntityProcessingSystem {
 	ComponentMapper<WallComponent> wallComponentComponentMapper;
 	ComponentMapper<PhysicsBody> physicsBodyComponentMapper;
 
-	public WallSystem(World box2dWorld, SpriteBatch spriteBatch) {
+	public WallSystem(SpriteBatch spriteBatch) {
 		super(Aspect.all(EntityType.class, PhysicsBody.class, WallComponent.class));
-		this.box2dWorld = box2dWorld;
+		//this.box2dWorld = box2dWorld;
 		this.spriteBatch = spriteBatch;
 	}
 
@@ -43,11 +43,13 @@ public class WallSystem extends EntityProcessingSystem {
 		WallComponent wallComponent = wallComponentComponentMapper.get(e);
 		PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
 
-		physicsBody.body = Wall.createBody(box2dWorld, wallComponent.centerX, wallComponent.centerY, wallComponent.width, wallComponent.height);
+		physicsBody.body = Wall.createBody(box2dSystem.getBox2dWorld(), wallComponent.centerX, wallComponent.centerY, wallComponent.width, wallComponent.height);
 	}
 
 	@Override
 	protected void process(Entity e) {
+		spriteBatch.begin();
+
 		WallComponent wallComponent = wallComponentComponentMapper.get(e);
 
 		//sprite.scaledDraw(spriteBatch, wallComponent.centerX, wallComponent.centerY, wallComponent.width / 2, wallComponent.height / 2, 0);
@@ -59,5 +61,7 @@ public class WallSystem extends EntityProcessingSystem {
 				0, 0,
 				wallTexture.getWidth(), wallTexture.getHeight(),
 				false, false);
+
+		spriteBatch.end();
 	}
 }

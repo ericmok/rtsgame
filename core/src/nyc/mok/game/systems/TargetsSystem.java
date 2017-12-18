@@ -12,7 +12,6 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
-import com.badlogic.gdx.physics.box2d.World;
 
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleBehaviorComponent;
@@ -41,9 +40,8 @@ public class TargetsSystem extends EntityProcessingSystem {
 	private EntitySubscription entitySubscription;
 	private PlayerManager playerManager;
 
-	public TargetsSystem(World box2dWorld) {
+	public TargetsSystem() {
 		super(Aspect.all(Targets.class, PhysicsBody.class, BattleBehaviorComponent.class, BattleAttackableComponent.class));
-		//this.box2dWorld = box2dWorld;
 	}
 
 
