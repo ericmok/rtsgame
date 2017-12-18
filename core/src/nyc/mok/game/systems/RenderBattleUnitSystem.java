@@ -24,137 +24,137 @@ import nyc.mok.game.components.PhysicsBody;
 
 public class RenderBattleUnitSystem extends EntityProcessingSystem {
 
-    private PlayerManager playerManager;
+	private PlayerManager playerManager;
 
-    SpriteBatch spriteBatch;
-    Texture texture;
-    Texture triangleTexture;
-    Texture squareTexture;
-    Texture simple_attack;
-    OrthographicCamera orthographicCamera;
-    Sprite sprite;
+	SpriteBatch spriteBatch;
+	Texture texture;
+	Texture triangleTexture;
+	Texture squareTexture;
+	Texture simple_attack;
+	OrthographicCamera orthographicCamera;
+	Sprite sprite;
 
-    Vector2 accOne = new Vector2();
-    Vector2 accTwo = new Vector2();
+	Vector2 accOne = new Vector2();
+	Vector2 accTwo = new Vector2();
 
-    public RenderBattleUnitSystem(SpriteBatch spriteBatch, OrthographicCamera orthographicCamera) {
-        super(Aspect.all(EntityType.class, BattleBehaviorComponent.class, PhysicsBody.class));
-        this.spriteBatch = spriteBatch;
-        this.orthographicCamera = orthographicCamera;
-    }
+	public RenderBattleUnitSystem(SpriteBatch spriteBatch, OrthographicCamera orthographicCamera) {
+		super(Aspect.all(EntityType.class, BattleBehaviorComponent.class, PhysicsBody.class));
+		this.spriteBatch = spriteBatch;
+		this.orthographicCamera = orthographicCamera;
+	}
 
-    @Override
-    protected void initialize() {
-        super.initialize();
+	@Override
+	protected void initialize() {
+		super.initialize();
 
-        texture = new Texture(Gdx.files.internal("marine.png"));
-        triangleTexture = new Texture(Gdx.files.internal("triangle.png"));
-        squareTexture = new Texture(Gdx.files.internal("square.png"));
-        simple_attack = new Texture(Gdx.files.internal("simple_attack.png"));
-        sprite = new Sprite(texture);
-    }
+		texture = new Texture(Gdx.files.internal("marine.png"));
+		triangleTexture = new Texture(Gdx.files.internal("triangle.png"));
+		squareTexture = new Texture(Gdx.files.internal("square.png"));
+		simple_attack = new Texture(Gdx.files.internal("simple_attack.png"));
+		sprite = new Sprite(texture);
+	}
 
-    @Override
-    protected void begin() {
-        super.begin();
-    }
+	@Override
+	protected void begin() {
+		super.begin();
+	}
 
-    @Override
-    protected void end() {
-        super.end();
-    }
+	@Override
+	protected void end() {
+		super.end();
+	}
 
-    private void drawSimpleBattleUnit(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent, String player, Texture texture, float radius) {
-        //float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
+	private void drawSimpleBattleUnit(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent, String player, Texture texture, float radius) {
+		//float radius = physicsBody.body.getFixtureList().get(0).getShape().getRadius();
 
 //        scaledSprite.setTexture(texture);
 //        scaledSprite.scaledDraw(spriteBatch,
 //                physicsBody.body.getPosition().x, physicsBody.body.getPosition().y,
 //                radius, radius,
 //                MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90);
-        spriteBatch.setColor(Constants.getColorForPlayer(player));
+		spriteBatch.setColor(Constants.getColorForPlayer(player));
 
-        spriteBatch.draw(texture,
-                physicsBody.body.getPosition().x - radius,
-                physicsBody.body.getPosition().y - radius,
-                radius, radius,
-                2 * radius, 2 * radius,
-                1, 1,
-                MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90,
-                0, 0,
-                texture.getWidth(), texture.getHeight(),
-                false, false);
+		spriteBatch.draw(texture,
+				physicsBody.body.getPosition().x - radius,
+				physicsBody.body.getPosition().y - radius,
+				radius, radius,
+				2 * radius, 2 * radius,
+				1, 1,
+				MathUtils.radiansToDegrees * physicsBody.body.getAngle() - 90,
+				0, 0,
+				texture.getWidth(), texture.getHeight(),
+				false, false);
 
-        spriteBatch.setColor(Color.WHITE);
+		spriteBatch.setColor(Color.WHITE);
 
-        drawSimpleAttack(battleBehaviorComponent, physicsBody);
-    }
+		drawSimpleAttack(battleBehaviorComponent, physicsBody);
+	}
 
-    private void drawSimpleAttack(BattleBehaviorComponent battleBehaviorComponent, PhysicsBody physicsBody) {
+	private void drawSimpleAttack(BattleBehaviorComponent battleBehaviorComponent, PhysicsBody physicsBody) {
 
-        // Not sure if we need to check target again, swinging necessarily implies target...
-        if (battleBehaviorComponent.target != -1 && battleBehaviorComponent.battleState == BattleBehaviorComponent.BattleState.SWINGING) {
-            PhysicsBody targetPhysicsBody = getWorld().getMapper(PhysicsBody.class).get(battleBehaviorComponent.target);
+		// Not sure if we need to check target again, swinging necessarily implies target...
+		if (battleBehaviorComponent.target != -1 && battleBehaviorComponent.battleState == BattleBehaviorComponent.BattleState.SWINGING) {
+			PhysicsBody targetPhysicsBody = getWorld().getMapper(PhysicsBody.class).get(battleBehaviorComponent.target);
 
-            accOne.set(
-                    targetPhysicsBody.body.getPosition().x -
-                            physicsBody.body.getPosition().x,
-                    targetPhysicsBody.body.getPosition().y -
-                            physicsBody.body.getPosition().y
-            );
+			accOne.set(
+					targetPhysicsBody.body.getPosition().x -
+							physicsBody.body.getPosition().x,
+					targetPhysicsBody.body.getPosition().y -
+							physicsBody.body.getPosition().y
+			);
 
-            Vector2 direction = accTwo.set(accOne);
-            direction.nor();
+			Vector2 direction = accTwo.set(accOne);
+			direction.nor();
 
-            // Projectile "illusion" as a function of swingTime
-            // Note: If you add a random component to the projectile, it looks like spears stabbing!
-            float illusoryProjectileLength = 0.7f;
-            float offsetFromAttacker = 1f - illusoryProjectileLength;
-            float size = 0.7f;
+			// Projectile "illusion" as a function of swingTime
+			// Note: If you add a random component to the projectile, it looks like spears stabbing!
+			float illusoryProjectileLength = 0.7f;
+			float offsetFromAttacker = 1f - illusoryProjectileLength;
+			float size = 0.7f;
 
-            accOne.scl(illusoryProjectileLength * battleBehaviorComponent.battleProgress / battleBehaviorComponent.swingTime)
-                .add(
-                    physicsBody.body.getPosition().x + offsetFromAttacker * direction.x,
-                    physicsBody.body.getPosition().y + offsetFromAttacker * direction.y
-                );
+			accOne.scl(illusoryProjectileLength * battleBehaviorComponent.battleProgress / battleBehaviorComponent.swingTime)
+				.add(
+					physicsBody.body.getPosition().x + offsetFromAttacker * direction.x,
+					physicsBody.body.getPosition().y + offsetFromAttacker * direction.y
+				);
 
-            spriteBatch.draw(simple_attack,
-                    accOne.x - size / 2,
-                    accOne.y - size / 2,
-                    size / 2, size / 2,
-                    size, size,
-                    1, 1,
-                    direction.angle() - 90,
-                    0, 0,
-                    texture.getWidth(), texture.getHeight(),
-                    false, false);
+			spriteBatch.draw(simple_attack,
+					accOne.x - size / 2,
+					accOne.y - size / 2,
+					size / 2, size / 2,
+					size, size,
+					1, 1,
+					direction.angle() - 90,
+					0, 0,
+					texture.getWidth(), texture.getHeight(),
+					false, false);
 //            scaledSprite.scaledDraw(spriteBatch,
 //                    accOne.x, accOne.y, 0.5f, 0.5f,
 //                    direction.angle() - 90);
-        }
-    }
+		}
+	}
 
-    @Override
-    protected void process(Entity e) {
-        spriteBatch.begin();
+	@Override
+	protected void process(Entity e) {
+		spriteBatch.begin();
 
-        PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
-        EntityType entityType = getWorld().getMapper(EntityType.class).get(e);
-        BattleBehaviorComponent battleBehaviorComponent = getWorld().getMapper(BattleBehaviorComponent.class).get(e);
-        String player = playerManager.getPlayer(e);
+		PhysicsBody physicsBody = getWorld().getMapper(PhysicsBody.class).get(e);
+		EntityType entityType = getWorld().getMapper(EntityType.class).get(e);
+		BattleBehaviorComponent battleBehaviorComponent = getWorld().getMapper(BattleBehaviorComponent.class).get(e);
+		String player = playerManager.getPlayer(e);
 
-        switch (entityType.type) {
-            case TRIANGLE:
-                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, triangleTexture, 1f);
-                break;
-            case SQUARE:
-                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, squareTexture, 1f);
-                break;
-            default:
-                drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, texture, 1f);
-                break;
-        }
+		switch (entityType.type) {
+			case TRIANGLE:
+				drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, triangleTexture, 1f);
+				break;
+			case SQUARE:
+				drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, squareTexture, 1f);
+				break;
+			default:
+				drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, texture, 1f);
+				break;
+		}
 
-        spriteBatch.end();
-    }
+		spriteBatch.end();
+	}
 }
