@@ -30,6 +30,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import nyc.mok.game.systems.BattleUnitSystem;
 import nyc.mok.game.systems.Box2dSystem;
 import nyc.mok.game.systems.ControlFieldSystem;
+import nyc.mok.game.systems.DeathAnimationSystem;
 import nyc.mok.game.systems.MovementSystem;
 import nyc.mok.game.systems.PositionFromPhysicsSystem;
 import nyc.mok.game.systems.RenderBattleUnitSystem;
@@ -114,6 +115,7 @@ public class MyGame implements Screen, InputProcessor {
 				.with(new ControlFieldSystem())
 				.with(new MovementSystem())
 				.with(new RenderBattleUnitSystem(ecsBatch, orthographicCamera))
+				.with(new DeathAnimationSystem(ecsBatch))
 				//.with(new Box2dDebugRendererSystem(orthographicCamera))
 				.build();
 

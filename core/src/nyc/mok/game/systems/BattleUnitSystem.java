@@ -18,6 +18,7 @@ import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
 import nyc.mok.game.components.SpawnLifecycleComponent;
 import nyc.mok.game.components.Targets;
+import nyc.mok.game.units.DeathFlag;
 import nyc.mok.game.utils.Box2dQueries;
 
 /**
@@ -210,6 +211,8 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 			boolean hasDied = BattleUnitSystem.inflictDamage(battleBehaviorComponent, targetBattleAttackable);
 
 			if (hasDied) {
+				PhysicsBody targetPhysicsBody = physicsBodyComponentMapper.get(battleBehaviorComponent.target);
+				DeathFlag.create(getWorld(),  targetPhysicsBody.body.getPosition().x, targetPhysicsBody.body.getPosition().y);
 				getWorld().delete(battleBehaviorComponent.target);
 				battleBehaviorComponent.target = -1; // Should be managed, but doing it anyway to be explicit
 				targetBattleAttackable.lastAttacker = -1; // Can we do this? Not sure if this is recycled correctly
