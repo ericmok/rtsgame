@@ -17,7 +17,8 @@ public class Constants {
 	public static float MAP_WIDTH = (3f/4) * 80f;
 	public static float MAP_HEIGHT = 80f;
 
-	public static float RPS_BONUS_DAMAGE_FACTOR = 5f;
+	public static float RPS_BONUS_DAMAGE_FACTOR = 4f;
+	public static float RPS_BONUS_ROTATION_DAMAGE_FACTOR = 2f;
 
 	public static short BOX2D_CATEGORY_ALL = 0xFF;
 	public static short BOX2D_CATEGORY_UNITS = 0x1 << 1; // Skipping 1 for debugging

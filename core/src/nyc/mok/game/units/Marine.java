@@ -12,7 +12,7 @@ import nyc.mok.game.components.EntityType;
 public class Marine {
 
 	public static final int HP = 10;
-	public static final float SWING_TIME = 0.4f;
+	public static final float SWING_TIME = 0.2f;
 	public static final float COOLDOWN_TIME = 0.5f;
 
 	/**

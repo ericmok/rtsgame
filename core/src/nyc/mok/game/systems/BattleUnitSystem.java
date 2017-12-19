@@ -41,7 +41,9 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	private ComponentMapper<MoveTargetsComponent> moveTargetsMapper;
 	private ComponentMapper<PhysicsBody> physicsBodyComponentMapper;
 
-	private Vector2 acc = new Vector2();
+	private static final Vector2 accOne = new Vector2();
+	private static final Vector2 accTwo = new Vector2();
+	private static final Vector2 accThree = new Vector2();
 
 	public BattleUnitSystem() {
 		super(Aspect.all(
@@ -210,11 +212,12 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		if (battleBehaviorComponent.target != BattleBehaviorComponent.NO_ENTITY) {
 			BattleBehaviorComponent targetBattleBehavior = battleBehaviorComponentMapper.get(battleBehaviorComponent.target);
 			BattleAttackableComponent targetBattleAttackable = battleAttackableComponentComponentMapper.get(battleBehaviorComponent.target);
+			PhysicsBody physicsBody = physicsBodyComponentMapper.get(e);
+			PhysicsBody targetPhysicsBody = physicsBodyComponentMapper.get(battleBehaviorComponent.target);
 
-			boolean hasDied = BattleUnitSystem.inflictDamage(battleBehaviorComponent, targetBattleAttackable);
+			boolean hasDied = BattleUnitSystem.inflictDamage(physicsBody, battleBehaviorComponent, targetPhysicsBody, targetBattleAttackable);
 
 			if (hasDied) {
-				PhysicsBody targetPhysicsBody = physicsBodyComponentMapper.get(battleBehaviorComponent.target);
 				DeathFlag.create(getWorld(), entityTypeMapper.get(battleBehaviorComponent.target).type, targetPhysicsBody.body.getPosition().x, targetPhysicsBody.body.getPosition().y);
 				getWorld().delete(battleBehaviorComponent.target);
 				battleBehaviorComponent.target = -1; // Should be managed, but doing it anyway to be explicit
@@ -250,7 +253,8 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	 * @param battleAttackableComponent The one receiving the damage
 	 * @return Returns true if the attackable component has died
 	 */
-	public static final boolean inflictDamage(BattleBehaviorComponent battleBehaviorComponent, BattleAttackableComponent battleAttackableComponent) {
+	public static final boolean inflictDamage(PhysicsBody physicsBody, BattleBehaviorComponent battleBehaviorComponent,
+											  PhysicsBody targetPhysicsBody, BattleAttackableComponent battleAttackableComponent) {
 
 		BattleBehaviorComponent.AttackType attackType = battleBehaviorComponent.attackType;
 		BattleAttackableComponent.ArmorType armorType = battleAttackableComponent.armorType;
@@ -271,6 +275,24 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 			if (armorType == BattleAttackableComponent.ArmorType.PAPER) {
 				damage *= bonus;
 			}
+		}
+
+		Vector2 directionOfAttack = accOne;
+		directionOfAttack.set(physicsBody.body.getPosition());
+		directionOfAttack.sub(targetPhysicsBody.body.getPosition());
+		directionOfAttack.nor();
+
+		Vector2 angleTargetIsFacing = accTwo;
+		angleTargetIsFacing.set(Vector2.X);
+		angleTargetIsFacing.setAngleRad(targetPhysicsBody.body.getAngle());
+		//Gdx.app.log("Battle", "target angle (" + angleTargetIsFacing.x + "," + angleTargetIsFacing.y + ")");
+
+		float diff = directionOfAttack.dot(angleTargetIsFacing);
+		//Gdx.app.log("Battle", "bonus from diff(" + diff + ")");
+
+		if (diff < -0.1f) {
+
+			damage *= Constants.RPS_BONUS_ROTATION_DAMAGE_FACTOR;
 		}
 
 		battleAttackableComponent.hp -= damage;
