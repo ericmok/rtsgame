@@ -166,8 +166,21 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 		moveTargetsMapper.get(e).entityToMoveTowards = battleBehaviorComponent.target;
 
-		// TODO: rangeToBeginAttacking is target for movement, but its never reached...
-		if (physicsBody.body.getPosition().dst(targetPhysicsBody.body.getPosition()) <= (battleBehaviorComponent.maxAttackRange) ) {
+		Vector2 desiredDirection = accOne;
+		desiredDirection.set(targetPhysicsBody.body.getPosition());
+		desiredDirection.sub(physicsBody.body.getPosition());
+		desiredDirection.nor();
+
+		Vector2 currentDirection = accTwo;
+		currentDirection.set(Vector2.X);
+		currentDirection.setAngleRad(physicsBody.body.getAngle());
+
+		float dotProduct = desiredDirection.dot(currentDirection);
+
+		// It can move to swinging only if target is not behind it
+
+		if (physicsBody.body.getPosition().dst(targetPhysicsBody.body.getPosition()) <= (battleBehaviorComponent.maxAttackRange) &&
+		dotProduct > Constants.BATTLE_ROTATION_DOT_PRODUCT_BEFORE_SWING) {
 			battleBehaviorComponent.battleProgress = 0;
 
 			//moveTargetsMapper.get(e).entityToMoveTowards = -1;
@@ -290,7 +303,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 		float diff = directionOfAttack.dot(angleTargetIsFacing);
 		//Gdx.app.log("Battle", "bonus from diff(" + diff + ")");
 
-		if (diff < -0.1f) {
+		if (diff < Constants.BATTLE_ROTATION_DOT_PRODUCT_BONUS_DAMAGE) {
 
 			damage *= Constants.RPS_BONUS_ROTATION_DAMAGE_FACTOR;
 		}

@@ -20,6 +20,9 @@ public class Constants {
 	public static float RPS_BONUS_DAMAGE_FACTOR = 4f;
 	public static float RPS_BONUS_ROTATION_DAMAGE_FACTOR = 2f;
 
+	public static float BATTLE_ROTATION_DOT_PRODUCT_BEFORE_SWING = 0.1f;
+	public static float BATTLE_ROTATION_DOT_PRODUCT_BONUS_DAMAGE = -0.1f;
+
 	public static short BOX2D_CATEGORY_ALL = 0xFF;
 	public static short BOX2D_CATEGORY_UNITS = 0x1 << 1; // Skipping 1 for debugging
 	public static short BOX2D_CATEGORY_ENV = 0x1 << 2;
