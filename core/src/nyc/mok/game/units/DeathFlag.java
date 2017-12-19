@@ -22,7 +22,7 @@ public class DeathFlag {
 
 	private static Archetype archetype = null;
 
-	public static Entity create(World world, float x, float y) {
+	public static Entity create(World world, EntityType.Type entityTypeType, float x, float y) {
 
 		if (archetype == null || world != previousWorld) {
 			archetype = archetypeBuilder.build(world);
@@ -32,7 +32,9 @@ public class DeathFlag {
 		int i = world.create(archetype);
 		Entity e = world.getEntity(i);
 
-		//world.getMapper(EntityType.class).create(e);
+		EntityType entityType = world.getMapper(EntityType.class).create(e);
+		entityType.type = entityTypeType;
+
 		DeathAnimation deathAnimation = world.getMapper(DeathAnimation.class).create(e);
 		deathAnimation.position.set(x, y);
 

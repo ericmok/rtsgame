@@ -33,7 +33,7 @@ public class DeathAnimationSystem extends EntityProcessingSystem {
 	private float totalAnimationTime = 1f;
 
 	public DeathAnimationSystem(SpriteBatch spriteBatch) {
-		super(Aspect.all(DeathAnimation.class));
+		super(Aspect.all(EntityType.class, DeathAnimation.class));
 		this.spriteBatch = spriteBatch;
 	}
 
@@ -66,9 +66,7 @@ public class DeathAnimationSystem extends EntityProcessingSystem {
 
 	@Override
 	protected void process(Entity e) {
-		// TODO: EntityType specific deaths
-		//EntityType entityType = entityTypeMapper.get(e);
-
+		EntityType entityType = entityTypeMapper.get(e);
 		DeathAnimation deathAnimation = deathAnimationMapper.get(e);
 
 		deathAnimation.progress += getWorld().getDelta();
@@ -77,6 +75,7 @@ public class DeathAnimationSystem extends EntityProcessingSystem {
 			deathAnimation.progress = 0;
 			getWorld().deleteEntity(e);
 		} else {
+			// Can add entity type specific death animations here
 			drawDeathAnimation(e, deathAnimation);
 		}
 	}

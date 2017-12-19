@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import nyc.mok.game.Constants;
 import nyc.mok.game.components.BattleAttackableComponent;
 import nyc.mok.game.components.BattleBehaviorComponent;
+import nyc.mok.game.components.EntityType;
 import nyc.mok.game.components.MoveTargetsComponent;
 import nyc.mok.game.components.PhysicsBody;
 import nyc.mok.game.components.PositionComponent;
@@ -32,6 +33,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 	// These are injected
 	private ComponentMapper<PositionComponent> positionComponentComponentMapper;
+	private ComponentMapper<EntityType> entityTypeMapper;
 	private ComponentMapper<SpawnLifecycleComponent> spawnLifecycleComponentComponentMapper;
 	private ComponentMapper<Targets> targetsComponentMapper;
 	private ComponentMapper<BattleBehaviorComponent> battleBehaviorComponentMapper;
@@ -44,6 +46,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 	public BattleUnitSystem() {
 		super(Aspect.all(
 				PositionComponent.class,
+				EntityType.class,
 				SpawnLifecycleComponent.class,
 				Targets.class,
 				BattleBehaviorComponent.class,
@@ -212,7 +215,7 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 
 			if (hasDied) {
 				PhysicsBody targetPhysicsBody = physicsBodyComponentMapper.get(battleBehaviorComponent.target);
-				DeathFlag.create(getWorld(),  targetPhysicsBody.body.getPosition().x, targetPhysicsBody.body.getPosition().y);
+				DeathFlag.create(getWorld(), entityTypeMapper.get(battleBehaviorComponent.target).type, targetPhysicsBody.body.getPosition().x, targetPhysicsBody.body.getPosition().y);
 				getWorld().delete(battleBehaviorComponent.target);
 				battleBehaviorComponent.target = -1; // Should be managed, but doing it anyway to be explicit
 				targetBattleAttackable.lastAttacker = -1; // Can we do this? Not sure if this is recycled correctly
