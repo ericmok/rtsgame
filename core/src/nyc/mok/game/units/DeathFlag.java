@@ -26,6 +26,7 @@ public class DeathFlag {
 
 		if (archetype == null || world != previousWorld) {
 			archetype = archetypeBuilder.build(world);
+			previousWorld = world;
 		}
 
 		int i = world.create(archetype);
