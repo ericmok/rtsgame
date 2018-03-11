@@ -74,6 +74,7 @@ public class MyGame implements Screen, InputProcessor {
 	private TextButton spawnTriangleButton;
 	private TextButton spawnSquareButton;
 	private TextButton fieldButton;
+	private TextButton playerModeButton;
 
 	private SpriteBatch ecsBatch;
 
@@ -84,6 +85,9 @@ public class MyGame implements Screen, InputProcessor {
 		FIELD
 	}
 	private UnitMode unitMode = UnitMode.MARINE;
+
+	private boolean playerMode = true;
+
 	public PlayerManager playerManager = new PlayerManager();
 
 	MyGame(Game game) {
@@ -133,7 +137,7 @@ public class MyGame implements Screen, InputProcessor {
 		skin = new Skin(Gdx.files.internal("uiskin.json"));
 		stage = new Stage(new ScreenViewport());
 
-		skin.getFont("default-font").getData().setScale(3);
+		skin.getFont("default-font").getData().setScale(2);
 
 		table = new Table();
 		table.setWidth(stage.getWidth());
@@ -145,6 +149,17 @@ public class MyGame implements Screen, InputProcessor {
 
 		table.row();
 
+		playerModeButton = new TextButton("PLAYER", skin);
+		playerModeButton.addListener(new ClickListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				playerMode = !playerMode;
+				return super.touchDown(event, x, y, pointer, button);
+			}
+		});
+		table.add(playerModeButton).width(240).height(110).padBottom(40);
+		table.row();
+
 		spawnMarineButton = new TextButton("MARINE", skin);
 		//spawnMarineButton.setSize(400, 300);
 		spawnMarineButton.addListener(new ClickListener() {
@@ -154,7 +169,7 @@ public class MyGame implements Screen, InputProcessor {
 				return super.touchDown(event, x, y, pointer, button);
 			}
 		});
-		table.add(spawnMarineButton).width(250).height(120).padBottom(50);
+		table.add(spawnMarineButton).width(240).height(110).padBottom(30);
 		table.row();
 
 		spawnTriangleButton = new TextButton("TRIANGLE", skin);
@@ -166,7 +181,7 @@ public class MyGame implements Screen, InputProcessor {
 				return super.touchDown(event, x, y, pointer, button);
 			}
 		});
-		table.add(spawnTriangleButton).width(250).height(120).padBottom(50);
+		table.add(spawnTriangleButton).width(240).height(110).padBottom(30);
 		table.row();
 
 		spawnSquareButton = new TextButton("SQUARE", skin);
@@ -178,7 +193,7 @@ public class MyGame implements Screen, InputProcessor {
 				return super.touchDown(event, x, y, pointer, button);
 			}
 		});
-		table.add(spawnSquareButton).width(250).height(120).padBottom(50);
+		table.add(spawnSquareButton).width(240).height(110).padBottom(30);
 		table.row();
 
 		fieldButton = new TextButton("FIELD", skin);
@@ -190,7 +205,8 @@ public class MyGame implements Screen, InputProcessor {
 				return super.touchDown(event, x, y, pointer, button);
 			}
 		});
-		table.add(fieldButton).width(250).height(120);
+		table.add(fieldButton).width(240).height(110).padBottom(30);
+		table.row();
 
 		stage.addActor(table);
 
@@ -315,11 +331,11 @@ public class MyGame implements Screen, InputProcessor {
 
 		if (unitMode == UnitMode.MARINE) {
 			// TODO: Test concurrency with ecs in game loop
-			Entity e = Marine.create(ecs, playerManager, Constants.PLAYER_ONE, touchPos.x, touchPos.y);
+			Entity e = Marine.create(ecs, playerManager, playerMode ? Constants.PLAYER_ONE : Constants.PLAYER_TWO, touchPos.x, touchPos.y);
 		} else if (unitMode == UnitMode.TRIANGLE) {
-			Entity e = Marine.createTriangle(ecs, playerManager,  Constants.PLAYER_TWO, touchPos.x, touchPos.y);
+			Entity e = Marine.createTriangle(ecs, playerManager,  playerMode ? Constants.PLAYER_ONE : Constants.PLAYER_TWO, touchPos.x, touchPos.y);
 		} else if (unitMode == UnitMode.SQUARE) {
-			Entity e = Marine.createSquare(ecs, playerManager, Constants.PLAYER_THREE, touchPos.x, touchPos.y);
+			Entity e = Marine.createSquare(ecs, playerManager, playerMode ? Constants.PLAYER_ONE : Constants.PLAYER_TWO, touchPos.x, touchPos.y);
 		}
 
 		prevTouchX = touchPos.x;
