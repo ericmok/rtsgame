@@ -353,6 +353,7 @@ public class MyGame implements Screen, InputProcessor {
 
 		if (unitMode == UnitMode.FIELD) {
 			Entity e = Field.create(ecs, playerManager, Constants.PLAYER_ONE, lastTouchDown.x, lastTouchDown.y, fieldDirection.angle());
+			Field.create(ecs, playerManager, Constants.PLAYER_TWO, lastTouchDown.x, -lastTouchDown.y, -fieldDirection.angle());
 		}
 		return false;
 	}
