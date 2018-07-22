@@ -21,6 +21,7 @@ import nyc.mok.game.components.SpawnLifecycleComponent;
 import nyc.mok.game.components.Targets;
 import nyc.mok.game.units.DeathFlag;
 import nyc.mok.game.utils.Box2dQueries;
+import nyc.mok.game.utils.SortUtils;
 
 /**
  * Created by taco on 12/9/17.
@@ -133,6 +134,9 @@ public class BattleUnitSystem extends EntityProcessingSystem {
 //				}
 //				i += 1;
 //			}
+
+			// Units may have moved so we have to resort targets to get closest one
+			SortUtils.sortBasedOnDist(targets.targets, getWorld(), physicsBody.body.getPosition());
 
 			// Some of these ids might be stale?
 			battleBehaviorComponent.target = targets.targets.get(0).getId();
