@@ -132,7 +132,6 @@ public class MovementSystem extends EntityProcessingSystem {
 		}
 	}
 
-
 		@Override
 	protected void process(Entity e) {
 		PhysicsBody physicsBody = physicsBodyMapper.get(e);
@@ -180,6 +179,19 @@ public class MovementSystem extends EntityProcessingSystem {
 			//calculateAndSetVelocity(physicsBody.body, summation, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
 			calculateAndSetAcceleration(physicsBody.body, summation, moveTargets.rampUpToMaxSpeedTimeFactor, maxSpeed, 0, 0);
 			calculateAndSetRotation(physicsBody.body, summation, moveTargets.torqueFactor);
+
+			// Important: If the unit moves out of range from the enemy target, then stop locking on to target
+			// Not sure if this should be somewhere else...
+			// One alternative is to readjust battling behavior so that units automatically lose lock
+			// on targets after their swing (by transitioning COOLDOWN to HAS_NO_TARGET)
+			// Also entityToMoveTowards is potentially redundant...
+			if (moveTargets.entityToMoveTowards != -1) {
+				PhysicsBody targetPhysicsBody = physicsBodyMapper.get(moveTargets.entityToMoveTowards);
+				if (targetPhysicsBody.body.getPosition().dst2(physicsBody.body.getPosition()) > battleBehavior.targetAcquisitionRange) {
+					battleBehavior.battleState = BattleBehaviorComponent.BattleState.HAS_NO_TARGET;
+					moveTargets.entityToMoveTowards = -1;
+				}
+			}
 		} else {
 			physicsBody.body.setLinearDamping(1f / moveTargets.rampUpToMaxSpeedTimeFactor);
 			physicsBody.body.setAngularVelocity(0);
