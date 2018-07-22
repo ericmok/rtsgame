@@ -14,7 +14,8 @@ public class EntityType extends Component {
         CIRCLE,
         TRIANGLE,
         SQUARE,
-        WALL
+        WALL,
+        ZUG
     }
     public Type type = Type.MARINE;
 

@@ -30,6 +30,7 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
 	Texture texture;
 	Texture triangleTexture;
 	Texture squareTexture;
+	Texture zugTexture;
 	Texture simple_attack;
 	OrthographicCamera orthographicCamera;
 	Sprite sprite;
@@ -50,6 +51,8 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
 		texture = new Texture(Gdx.files.internal("marine.png"));
 		triangleTexture = new Texture(Gdx.files.internal("triangle.png"));
 		squareTexture = new Texture(Gdx.files.internal("square.png"));
+		zugTexture = new Texture(Gdx.files.internal("zug.png"));
+
 		simple_attack = new Texture(Gdx.files.internal("simple_attack.png"));
 		sprite = new Sprite(texture);
 	}
@@ -149,6 +152,9 @@ public class RenderBattleUnitSystem extends EntityProcessingSystem {
 				break;
 			case SQUARE:
 				drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, squareTexture, 1f);
+				break;
+			case ZUG:
+				drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, zugTexture, 1f);
 				break;
 			default:
 				drawSimpleBattleUnit(physicsBody, battleBehaviorComponent, player, texture, 1f);

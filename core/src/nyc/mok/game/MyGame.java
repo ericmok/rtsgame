@@ -73,6 +73,7 @@ public class MyGame implements Screen, InputProcessor {
 	private TextButton spawnMarineButton;
 	private TextButton spawnTriangleButton;
 	private TextButton spawnSquareButton;
+	private TextButton spawnZugButton;
 	private TextButton fieldButton;
 	private TextButton playerModeButton;
 
@@ -82,6 +83,7 @@ public class MyGame implements Screen, InputProcessor {
 		MARINE,
 		TRIANGLE,
 		SQUARE,
+		ZUG,
 		FIELD
 	}
 	private UnitMode unitMode = UnitMode.MARINE;
@@ -194,6 +196,18 @@ public class MyGame implements Screen, InputProcessor {
 			}
 		});
 		table.add(spawnSquareButton).width(240).height(110).padBottom(30);
+		table.row();
+
+		spawnZugButton = new TextButton("ZUG", skin);
+		//spawnSquareButton.setSize(400, 300);
+		spawnZugButton.addListener(new ClickListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				unitMode = UnitMode.ZUG;
+				return super.touchDown(event, x, y, pointer, button);
+			}
+		});
+		table.add(spawnZugButton).width(240).height(110).padBottom(30);
 		table.row();
 
 		fieldButton = new TextButton("FIELD", skin);
@@ -336,6 +350,8 @@ public class MyGame implements Screen, InputProcessor {
 			Entity e = Marine.createTriangle(ecs, playerManager,  playerMode ? Constants.PLAYER_ONE : Constants.PLAYER_TWO, touchPos.x, touchPos.y);
 		} else if (unitMode == UnitMode.SQUARE) {
 			Entity e = Marine.createSquare(ecs, playerManager, playerMode ? Constants.PLAYER_ONE : Constants.PLAYER_TWO, touchPos.x, touchPos.y);
+		} else if (unitMode == UnitMode.ZUG) {
+			Entity e = Marine.createZug(ecs, playerManager, playerMode ? Constants.PLAYER_ONE : Constants.PLAYER_TWO, touchPos.x, touchPos.y);
 		}
 
 		prevTouchX = touchPos.x;
