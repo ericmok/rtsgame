@@ -30,8 +30,8 @@ import nyc.mok.game.components.Targets;
 public class Common {
 
 	public static final float COMMON_UNIT_RADIUS = 1;
-	public static final float COMMON_UNIT_TARGET_ACQUISITION_RANGE = 10;
-	public static final float COMMON_UNIT_MAX_ATTACK_RANGE = 6;
+	public static final float COMMON_UNIT_TARGET_ACQUISITION_RANGE = 16;
+	public static final float COMMON_UNIT_MAX_ATTACK_RANGE = 10;
 
 	public static final short FILTER_CATEGORIES = Constants.BOX2D_CATEGORY_UNITS;
 
