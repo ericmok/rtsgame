@@ -141,7 +141,7 @@ public class ControlFieldSystem extends BaseEntitySystem {
 					bodyDef.angle = MathUtils.degRad * controlField.initAngle;
 
 					CircleShape circleShape = new CircleShape();
-					circleShape.setRadius(10);
+					circleShape.setRadius(8);
 					Body body = box2dSystem.getBox2dWorld().createBody(bodyDef);
 					FixtureDef fixtureDef = new FixtureDef();
 					fixtureDef.shape = circleShape;
